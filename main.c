@@ -3,5 +3,6 @@
 #include "Hoquei/gameHoquei.h"
 
 int main(){
+    gameMemoria();
     return 0;
 }
