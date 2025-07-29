@@ -381,8 +381,8 @@ void animacaoFinal(GameState *game){
         game->bola.posicao = (Vector2) {game->screen_width/2, game->screen_height/2};
         game->colorbackground = BLACK;
         game->colortext = RAYWHITE;
-        game->jogador1.cor = RED;
-        game->jogador2.cor = RED;
+        game->jogador1.cor = ORANGE;
+        game->jogador2.cor = ORANGE;
         game->bola.cor = YELLOW;
         game->gol1.cor = RED;
         game->gol2.cor = RED;
@@ -399,7 +399,7 @@ void animacaoFinal(GameState *game){
     }
     if(game->terminou){
         game->fadecolor = Fade(BLACK, game->opacidadefade);
-        game->opacidadefade+=0.003333f;
+        game->opacidadefade+=0.003f;
         game->jogador1.coefgravidade = GetFrameTime() * game->G * 1/ Vector2Length(Vector2Subtract(game->bola.posicao, game->jogador1.posicao));
         game->jogador2.coefgravidade = GetFrameTime() * game->G * 1/ Vector2Length(Vector2Subtract(game->bola.posicao, game->jogador2.posicao));
         game->jogador1.atracao = Vector2Scale(Vector2Normalize(Vector2Subtract(game->bola.posicao, game->jogador1.posicao)), game->jogador1.coefgravidade);
