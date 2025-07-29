@@ -17,6 +17,7 @@ typedef struct Bola{
     Vector2 posicao;
     Vector2 velocidade;
     Color cor;
+    Sound som;
     float raio;
     
 }Bola;

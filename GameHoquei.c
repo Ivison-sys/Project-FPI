@@ -6,6 +6,7 @@
 
 void gameHoquei(){
     InitWindow(1280, 720, "Air Hockey");
+    InitAudioDevice();
     SetTargetFPS(60);
     /*if(!IsWindowFullscreen()){
         ToggleFullscreen();
@@ -58,6 +59,7 @@ void iniciarJogo(GameState *game){
         .posicao = {game->screen_width/2, game->screen_height/2},
         .velocidade = {0.0f, 0.0f},
         .cor = WHITE,
+        .som = LoadSound("Hoquei/src_sounds/colisaometalica.wav"),
         .raio = 22.0f
     };
 
@@ -225,6 +227,7 @@ void verificarColisoes (GameState *game){
                 game->jogador1.posicao = Vector2Add(game->jogador1.posicao, Vector2Scale(game->vetorcolisao, -0.5f));
                 game->bola.posicao = Vector2Add(game->bola.posicao, Vector2Scale(game->vetorcolisao, 0.5f));
             }
+            PlaySound(game->bola.som);
             game->n = Vector2Normalize(game->vetorcolisao);
             game->v_rel = Vector2Subtract(game->bola.velocidade, game->jogador1.velocidade);
             game->proj = Vector2DotProduct(game->v_rel, game->n);
@@ -243,6 +246,7 @@ void verificarColisoes (GameState *game){
                 game->jogador2.posicao = Vector2Add(game->jogador2.posicao, Vector2Scale(game->vetorcolisao, -0.5f));
                 game->bola.posicao = Vector2Add(game->bola.posicao, Vector2Scale(game->vetorcolisao, 0.5f));
             }
+            PlaySound(game->bola.som);
             game->n = Vector2Normalize(game->vetorcolisao);
             game->v_rel = Vector2Subtract(game->bola.velocidade, game->jogador2.velocidade);
             game->proj = Vector2DotProduct(game->v_rel, game->n);
@@ -271,18 +275,22 @@ void verificarColisoes (GameState *game){
         }
 
         if (game->bola.posicao.x + game->bola.raio >= game->screen_width) {
+            PlaySound(game->bola.som);
             game->bola.posicao.x = game->screen_width - game->bola.raio;
             game->bola.velocidade.x *= -0.8f;
         }
         if (game->bola.posicao.x - game->bola.raio <= 0) {
+            PlaySound(game->bola.som);
             game->bola.posicao.x = game->bola.raio;
             game->bola.velocidade.x *= -0.8f;
         }
         if (game->bola.posicao.y + game->bola.raio >= game->screen_height) {
+            PlaySound(game->bola.som);
             game->bola.posicao.y = game->screen_height - game->bola.raio;
             game->bola.velocidade.y *= -0.8f;
         }
         if (game->bola.posicao.y - game->bola.raio <= 0) {
+            PlaySound(game->bola.som);
             game->bola.posicao.y = game->bola.raio;
             game->bola.velocidade.y *= -0.8f;
         }
