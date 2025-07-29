@@ -13,10 +13,9 @@ typedef struct Jogador{
 typedef struct Bola{
     Vector2 posicao;
     Vector2 velocidade;
+}Bola;
 
 
-
-}
 
 
 void gameHoquei();
