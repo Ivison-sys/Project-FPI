@@ -7,9 +7,9 @@
 void gameHoquei(){
     InitWindow(1280, 720, "Air Hockey");
     SetTargetFPS(60);
-    if(!IsWindowFullscreen()){
+    /*if(!IsWindowFullscreen()){
         ToggleFullscreen();
-    }
+    }*/
     GameState game;
     iniciarJogo(&game);
 
@@ -102,7 +102,7 @@ void iniciarJogo(GameState *game){
     game->G = 700.0f;
     game->terminou = 0;
     game->contador = -1;
-    game->grossuralinha = 25;
+    game->grossuralinha = 12;
     game->vetorcolisao = (Vector2) {0.0f, 0.0f};
     game->opacidadefade = 0.0f;
 }
@@ -273,17 +273,14 @@ void verificarColisoes (GameState *game){
             game->bola.posicao.x = game->screen_width - game->bola.raio;
             game->bola.velocidade.x *= -0.8f;
         }
-        //Colisao com o limite esquerdo
         if (game->bola.posicao.x - game->bola.raio <= 0) {
             game->bola.posicao.x = game->bola.raio;
             game->bola.velocidade.x *= -0.8f;
         }
-        //Colisao com o limite abaixo
         if (game->bola.posicao.y + game->bola.raio >= game->screen_height) {
             game->bola.posicao.y = game->screen_height - game->bola.raio;
             game->bola.velocidade.y *= -0.8f;
         }
-        //Colisao com o limite acima
         if (game->bola.posicao.y - game->bola.raio <= 0) {
             game->bola.posicao.y = game->bola.raio;
             game->bola.velocidade.y *= -0.8f;
@@ -292,17 +289,14 @@ void verificarColisoes (GameState *game){
             game->jogador1.posicao.x = game->divisoria.inicio.x - game->jogador1.raio;
             game->jogador1.velocidade.x *= -1;
         }
-        //Colisao com o limite esquerdo
         if (game->jogador1.posicao.x - game->jogador1.raio <= 0) {
             game->jogador1.posicao.x = game->jogador1.raio;
             game->jogador1.velocidade.x *= -1;
         }
-        //Colisao com o limite abaixo
         if (game->jogador1.posicao.y + game->jogador1.raio >= game->screen_height) {
             game->jogador1.posicao.y = game->screen_height - game->jogador1.raio;
             game->jogador1.velocidade.y *= -1;
         }
-        //Colisao com o limite acima
         if (game->jogador1.posicao.y - game->jogador1.raio <= 0) {
             game->jogador1.posicao.y = game->jogador1.raio;
             game->jogador1.velocidade.y *= -1;
@@ -332,13 +326,13 @@ void renderizarJogo(GameState *game){
     ClearBackground(game->colorbackground);
 
     DrawCircle(game->circuloesq.posicao.x, game->circuloesq.posicao.y, game->circuloesq.raio, game->circuloesq.cor);
-    DrawCircle(game->circuloesq.posicao.x, game->circuloesq.posicao.y, game->circuloesq.raio - 25, game->colorbackground);
+    DrawCircle(game->circuloesq.posicao.x, game->circuloesq.posicao.y, game->circuloesq.raio - game->grossuralinha, game->colorbackground);
 
     DrawCircle(game->circulomeio.posicao.x, game->circulomeio.posicao.y, game->circulomeio.raio, game->circulomeio.cor);
-    DrawCircle(game->circulomeio.posicao.x, game->circulomeio.posicao.y, game->circulomeio.raio-25, game->colorbackground);
+    DrawCircle(game->circulomeio.posicao.x, game->circulomeio.posicao.y, game->circulomeio.raio-game->grossuralinha, game->colorbackground);
 
     DrawCircle(game->circulodir.posicao.x, game->circulodir.posicao.y, game->circulodir.raio, game->circulodir.cor);
-    DrawCircle(game->circulodir.posicao.x, game->circulodir.posicao.y, game->circulodir.raio-25, game->colorbackground);
+    DrawCircle(game->circulodir.posicao.x, game->circulodir.posicao.y, game->circulodir.raio-game->grossuralinha, game->colorbackground);
 
     DrawLineEx(game->divisoria.inicio, game->divisoria.fim, game->grossuralinha, game->divisoria.cor);
 
@@ -359,7 +353,7 @@ void renderizarJogo(GameState *game){
 
     sprintf(game->placar, "%d %d", game->jogador1.gols, game->jogador2.gols);
     DrawText(game->placar, game->screen_width/2 - MeasureText(game->placar, 80) / 2, 
-        20, 80, RAYWHITE);
+        20, 80, game->colortext);
 
     sprintf(game->textfps, "FPS: %d", game->fps);
     DrawText(game->textfps, game->screen_width - 100, 20, 20, game->colortext);
