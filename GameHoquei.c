@@ -380,7 +380,7 @@ void renderizarJogo(GameState *game){
     DrawRectangle(0,0,game->screen_width, game->screen_height, game->fadecolor);
 }
 void animacaoFinal(GameState *game){
-    if (game->terminou==0 || (game->jogador1.gols == 5 || game->jogador2.gols == 5)){
+    if (game->terminou==0 && (game->jogador1.gols == 5 || game->jogador2.gols == 5)){
         game->jogador1.posicao = (Vector2) {game->screen_width/2 - 175, game->screen_height/2};
         game->jogador2.posicao = (Vector2) {game->screen_width/2 + 175, game->screen_height/2};
         game->bola.posicao = (Vector2) {game->screen_width/2, game->screen_height/2};
