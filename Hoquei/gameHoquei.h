@@ -51,7 +51,7 @@ typedef struct GameState{
     Circulo circuloesq, circulomeio, circulodir;
     float aceleracao, hue, atrito, vel_max, vel_max_bola, opacidade, opacidadefade, sobreposicao, proj, G;
     int screen_width, screen_height;
-    int terminou, contador, grossuralinha, fps;
+    int rodando, terminou, contador, grossuralinha, fps;
     double tempoatual;
     char tempo[20], placar[6], textfps[10], contregressiva[4], vencedor[20];
     Color colorbackground, colortext, colormidline, fadecolor;
@@ -72,7 +72,7 @@ void atualizarContador (GameState *game);
 
 void verificarColisoes (GameState *game);
 
-void renderizarJogo (GameState *game);
+void desenharJogo (GameState *game);
 
 void animacaoFinal (GameState *game);
 

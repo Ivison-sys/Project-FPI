@@ -13,7 +13,7 @@ void gameHoquei(){
     GameState game;
     iniciarJogo(&game);
 
-    while(!WindowShouldClose()){
+    while(!WindowShouldClose() && game.rodando){
         BeginDrawing();
 
         atualizaCores(&game);
@@ -21,7 +21,7 @@ void gameHoquei(){
         atualizarContador(&game);
         verificarColisoes(&game);
         animacaoFinal(&game);
-        renderizarJogo(&game);
+        desenharJogo(&game);
         
 
         EndDrawing();
@@ -100,6 +100,7 @@ void iniciarJogo(GameState *game){
     game->sobreposicao = 0.0f;
     game->proj = 0.0f;
     game->G = 700.0f;
+    game->rodando = 1;
     game->terminou = 0;
     game->contador = -1;
     game->grossuralinha = 12;
@@ -113,7 +114,7 @@ void atualizaCores(GameState *game){
             SetWindowOpacity(game->opacidade);
             game->opacidade+=0.00833;
         }
-        game->colorbackground = ColorFromHSV(game->hue, 1.0f, 1.0f);
+        game->colorbackground = BLACK;
         game->colortext = ColorFromHSV(fmod(game->hue + 180.0f, 360.0f), 1.0f, 1.0f);
         game->divisoria.cor = game->colortext;
         game->circuloesq.cor = game->colortext;
@@ -322,7 +323,7 @@ void verificarColisoes (GameState *game){
 
 }
 
-void renderizarJogo(GameState *game){
+void desenharJogo(GameState *game){
     ClearBackground(game->colorbackground);
 
     DrawCircle(game->circuloesq.posicao.x, game->circuloesq.posicao.y, game->circuloesq.raio, game->circuloesq.cor);
@@ -360,7 +361,7 @@ void renderizarJogo(GameState *game){
 
     if(game->contador>0 && game->contador<=3){
         sprintf(game->contregressiva, "%d", game->contador);
-        DrawText(game->contregressiva, game->screen_width/2 - MeasureText(game->contregressiva, 80)/2, game->screen_height/2, 80, RAYWHITE);
+        DrawText(game->contregressiva, game->screen_width/2 - MeasureText(game->contregressiva, 150)/2, game->screen_height/2, 150, RAYWHITE);
     }
     if(game->jogador1.gols == 5){
         sprintf(game->vencedor, "JOGADOR 1 VENCEU!!!");
@@ -405,6 +406,9 @@ void animacaoFinal(GameState *game){
         game->jogador2.atracao = Vector2Scale(Vector2Normalize(Vector2Subtract(game->bola.posicao, game->jogador2.posicao)), game->jogador2.coefgravidade);
         game->jogador1.velocidade = Vector2Add(game->jogador1.velocidade, game->jogador1.atracao);
         game->jogador2.velocidade = Vector2Add(game->jogador2.velocidade, game->jogador2.atracao);
+        if(game->opacidadefade>1.5f){
+            game->rodando = 0;
+        }
     }
 }
 
