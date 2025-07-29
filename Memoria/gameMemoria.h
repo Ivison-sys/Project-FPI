@@ -7,6 +7,12 @@ typedef enum{
     FRENTE,
 }StateCard;
 
+typedef enum{
+    MENU,
+    JOGANDO,
+    PAUSADO,
+} StateGame;
+
 typedef struct {
     StateCard estado;
     Rectangle retangulo;
@@ -18,6 +24,8 @@ void drawCards(Card** cards);
 Card** inicilizandoCards();
 
 Card** buscandoClick(Card** cards);
+
+char** gerandoSeq();
 
 void gameMemoria();
 #endif
