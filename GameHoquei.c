@@ -102,7 +102,7 @@ void iniciarJogo(GameState *game){
     game->opacidade = 0.0f;
     game->sobreposicao = 0.0f;
     game->proj = 0.0f;
-    game->G = 700.0f;
+    game->G = 400.0f;
     game->flagmusica = 1;
     game->rodando = 1;
     game->terminou = 0;
@@ -268,7 +268,7 @@ void verificarColisoes (GameState *game){
             game->jogador2.gols++;
             game->jogador1.posicao = (Vector2) {game->jogador1.raio+20, game->screen_height/2};
             game->jogador2.posicao = (Vector2) {game->screen_width-(game->jogador2.raio+20), game->screen_height/2};
-            game->bola.posicao = (Vector2) {3*game->screen_width/4, game->screen_height/2};
+            game->bola.posicao = (Vector2) {1*game->screen_width/4, game->screen_height/2};
             game->jogador1.velocidade = (Vector2) {0.0f, 0.0f};
             game->jogador2.velocidade = (Vector2) {0.0f, 0.0f};
             game->bola.velocidade = (Vector2) {0.0f, 0.0f};
