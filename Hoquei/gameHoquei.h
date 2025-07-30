@@ -52,10 +52,11 @@ typedef struct GameState{
     Circulo circuloesq, circulomeio, circulodir;
     float aceleracao, hue, atrito, vel_max, vel_max_bola, opacidade, opacidadefade, sobreposicao, proj, G;
     int screen_width, screen_height;
-    int rodando, terminou, contador, grossuralinha, fps;
+    int flagmusica, rodando, terminou, contador, grossuralinha, fps;
     double tempoatual;
     char tempo[20], placar[6], textfps[10], contregressiva[4], vencedor[20];
     Color colorbackground, colortext, colormidline, fadecolor;
+    Music musicadefundo;
     Vector2 vetorcolisao;
     Vector2 n;
     Vector2 v_rel;

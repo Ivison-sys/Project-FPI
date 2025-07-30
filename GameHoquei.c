@@ -93,7 +93,7 @@ void iniciarJogo(GameState *game){
         .posicao = {game->screen_width, game->screen_height/2},
         .raio = 175.0f,
     };
-
+    game->fadecolor = (Color) {0.0f, 0.0f, 0.0f, 0.0f};
     game->aceleracao = 1.6f;
     game->hue = 0.0f;
     game->atrito = 0.94f;
@@ -103,12 +103,15 @@ void iniciarJogo(GameState *game){
     game->sobreposicao = 0.0f;
     game->proj = 0.0f;
     game->G = 700.0f;
+    game->flagmusica = 1;
     game->rodando = 1;
     game->terminou = 0;
-    game->contador = -1;
+    game->contador = 6;
     game->grossuralinha = 12;
     game->vetorcolisao = (Vector2) {0.0f, 0.0f};
     game->opacidadefade = 0.0f;
+    game->colorbackground = BLACK;
+    game->colortext = RAYWHITE;
 }
 
 void atualizaCores(GameState *game){
@@ -117,7 +120,6 @@ void atualizaCores(GameState *game){
             SetWindowOpacity(game->opacidade);
             game->opacidade+=0.00833;
         }
-        game->colorbackground = BLACK;
         game->colortext = ColorFromHSV(fmod(game->hue + 180.0f, 360.0f), 1.0f, 1.0f);
         game->divisoria.cor = game->colortext;
         game->circuloesq.cor = game->colortext;
