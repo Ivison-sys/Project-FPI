@@ -60,8 +60,7 @@ void iniciarJogo(GameState *game){
         .posicao = {game->screen_width/2, game->screen_height/2},
         .velocidade = {0.0f, 0.0f},
         .cor = WHITE,
-        .somleve = LoadSound("Hoquei/src_sounds/colisao.wav"),
-        .sompesado = LoadSound("Hoquei/src_sounds/colisaometalica.wav"),
+        .som = LoadSound("Hoquei/src_sounds/colisaometalica.wav"),
         .raio = 22.0f
     };
 
@@ -229,7 +228,8 @@ void verificarColisoes (GameState *game){
                 game->jogador1.posicao = Vector2Add(game->jogador1.posicao, Vector2Scale(game->vetorcolisao, -0.5f));
                 game->bola.posicao = Vector2Add(game->bola.posicao, Vector2Scale(game->vetorcolisao, 0.5f));
             }
-            PlaySound(game->bola.sompesado);
+
+            
             game->n = Vector2Normalize(game->vetorcolisao);
             game->v_rel = Vector2Subtract(game->bola.velocidade, game->jogador1.velocidade);
             game->proj = Vector2DotProduct(game->v_rel, game->n);
@@ -237,6 +237,9 @@ void verificarColisoes (GameState *game){
                 game->variacao = Vector2Scale(game->n, -2.0f * game->proj);
                 game->bola.velocidade = Vector2Add(game->bola.velocidade, game->variacao);
             }
+            SetSoundVolume(game->bola.som, Clamp(Vector2Length(game->bola.velocidade)/game->vel_max, 0.0f, 1.0f));
+            SetSoundPitch(game->bola.som, Clamp(Vector2Length(game->bola.velocidade)/game->vel_max, 0.0f, 1.0f)+0.5f);
+            PlaySound(game->bola.som);
         }
 
         if (CheckCollisionCircles(game->jogador2.posicao, game->jogador2.raio, game->bola.posicao, game->bola.raio)) {
@@ -248,7 +251,6 @@ void verificarColisoes (GameState *game){
                 game->jogador2.posicao = Vector2Add(game->jogador2.posicao, Vector2Scale(game->vetorcolisao, -0.5f));
                 game->bola.posicao = Vector2Add(game->bola.posicao, Vector2Scale(game->vetorcolisao, 0.5f));
             }
-            PlaySound(game->bola.sompesado);
             game->n = Vector2Normalize(game->vetorcolisao);
             game->v_rel = Vector2Subtract(game->bola.velocidade, game->jogador2.velocidade);
             game->proj = Vector2DotProduct(game->v_rel, game->n);
@@ -256,6 +258,9 @@ void verificarColisoes (GameState *game){
                 game->variacao = Vector2Scale(game->n, -2.0f * game->proj);
                 game->bola.velocidade = Vector2Add(game->bola.velocidade, game->variacao);
             }
+            SetSoundVolume(game->bola.som, Clamp(Vector2Length(game->bola.velocidade)/game->vel_max, 0.0f, 1.0f));
+            SetSoundPitch(game->bola.som, Clamp(Vector2Length(game->bola.velocidade)/game->vel_max, 0.0f, 1.0f)+0.5f);
+            PlaySound(game->bola.som);
         }
         if(CheckCollisionCircleLine(game->bola.posicao, game->bola.raio, game->gol1.inicio, game->gol1.fim)){
             game->jogador2.gols++;
@@ -277,22 +282,30 @@ void verificarColisoes (GameState *game){
         }
 
         if (game->bola.posicao.x + game->bola.raio >= game->screen_width) {
-            PlaySound(game->bola.somleve);
+            SetSoundVolume(game->bola.som, Clamp(Vector2Length(game->bola.velocidade)/game->vel_max, 0.0f, 1.0f));
+            SetSoundPitch(game->bola.som, Clamp(Vector2Length(game->bola.velocidade)/game->vel_max, 0.0f, 1.0f)+0.5f);
+            PlaySound(game->bola.som);
             game->bola.posicao.x = game->screen_width - game->bola.raio;
             game->bola.velocidade.x *= -0.8f;
         }
         if (game->bola.posicao.x - game->bola.raio <= 0) {
-            PlaySound(game->bola.somleve);
+            SetSoundVolume(game->bola.som, Clamp(Vector2Length(game->bola.velocidade)/game->vel_max, 0.0f, 1.0f));
+            SetSoundPitch(game->bola.som, Clamp(Vector2Length(game->bola.velocidade)/game->vel_max, 0.0f, 1.0f)+0.5f);
+            PlaySound(game->bola.som);
             game->bola.posicao.x = game->bola.raio;
             game->bola.velocidade.x *= -0.8f;
         }
         if (game->bola.posicao.y + game->bola.raio >= game->screen_height) {
-            PlaySound(game->bola.somleve);
+            SetSoundVolume(game->bola.som, Clamp(Vector2Length(game->bola.velocidade)/game->vel_max, 0.0f, 1.0f));
+            SetSoundPitch(game->bola.som, Clamp(Vector2Length(game->bola.velocidade)/game->vel_max, 0.0f, 1.0f)+0.5f);
+            PlaySound(game->bola.som);
             game->bola.posicao.y = game->screen_height - game->bola.raio;
             game->bola.velocidade.y *= -0.8f;
         }
         if (game->bola.posicao.y - game->bola.raio <= 0) {
-            PlaySound(game->bola.somleve);
+            SetSoundVolume(game->bola.som, Clamp(Vector2Length(game->bola.velocidade)/game->vel_max, 0.0f, 1.0f));
+            SetSoundPitch(game->bola.som, Clamp(Vector2Length(game->bola.velocidade)/game->vel_max, 0.0f, 1.0f)+0.5f);
+            PlaySound(game->bola.som);
             game->bola.posicao.y = game->bola.raio;
             game->bola.velocidade.y *= -0.8f;
         }
@@ -336,24 +349,24 @@ void verificarColisoes (GameState *game){
 void desenharJogo(GameState *game){
     ClearBackground(game->colorbackground);
 
-    DrawCircle(game->circuloesq.posicao.x, game->circuloesq.posicao.y, game->circuloesq.raio, game->circuloesq.cor);
-    DrawCircle(game->circuloesq.posicao.x, game->circuloesq.posicao.y, game->circuloesq.raio - game->grossuralinha, game->colorbackground);
+    DrawCircleV(game->circuloesq.posicao, game->circuloesq.raio, game->circuloesq.cor);
+    DrawCircleV(game->circuloesq.posicao, game->circuloesq.raio - game->grossuralinha, game->colorbackground);
 
-    DrawCircle(game->circulomeio.posicao.x, game->circulomeio.posicao.y, game->circulomeio.raio, game->circulomeio.cor);
-    DrawCircle(game->circulomeio.posicao.x, game->circulomeio.posicao.y, game->circulomeio.raio-game->grossuralinha, game->colorbackground);
+    DrawCircleV(game->circulomeio.posicao, game->circulomeio.raio, game->circulomeio.cor);
+    DrawCircleV(game->circulomeio.posicao, game->circulomeio.raio-game->grossuralinha, game->colorbackground);
 
-    DrawCircle(game->circulodir.posicao.x, game->circulodir.posicao.y, game->circulodir.raio, game->circulodir.cor);
-    DrawCircle(game->circulodir.posicao.x, game->circulodir.posicao.y, game->circulodir.raio-game->grossuralinha, game->colorbackground);
+    DrawCircleV(game->circulodir.posicao, game->circulodir.raio, game->circulodir.cor);
+    DrawCircleV(game->circulodir.posicao, game->circulodir.raio-game->grossuralinha, game->colorbackground);
 
     DrawLineEx(game->divisoria.inicio, game->divisoria.fim, game->grossuralinha, game->divisoria.cor);
 
-    DrawCircle(game->jogador1.posicao.x, game->jogador1.posicao.y, game->jogador1.raio, game->jogador1.cor);
-    DrawCircle(game->jogador1.posicao.x, game->jogador1.posicao.y, 0.6f*game->jogador1.raio, game->colorbackground);
+    DrawCircleV(game->jogador1.posicao, game->jogador1.raio, game->jogador1.cor);
+    DrawCircleV(game->jogador1.posicao, 0.6f*game->jogador1.raio, game->colorbackground);
     
-    DrawCircle(game->bola.posicao.x, game->bola.posicao.y, game->bola.raio, game->bola.cor);
+    DrawCircleV(game->bola.posicao, game->bola.raio, game->bola.cor);
     
-    DrawCircle(game->jogador2.posicao.x, game->jogador2.posicao.y, game->jogador2.raio, game->jogador2.cor);
-    DrawCircle(game->jogador2.posicao.x, game->jogador2.posicao.y, 0.6f*game->jogador2.raio, game->colorbackground);
+    DrawCircleV(game->jogador2.posicao, game->jogador2.raio, game->jogador2.cor);
+    DrawCircleV(game->jogador2.posicao, 0.6f*game->jogador2.raio, game->colorbackground);
     
     DrawLineEx(game->gol1.inicio, game->gol1.fim, game->grossuralinha, game->gol1.cor);
     DrawLineEx(game->gol2.inicio, game->gol2.fim, game->grossuralinha, game->gol2.cor);
@@ -386,8 +399,6 @@ void desenharJogo(GameState *game){
 }
 void animacaoFinal(GameState *game){
     if (game->terminou==0 && (game->jogador1.gols == 5 || game->jogador2.gols == 5)){
-        UnloadSound(game->bola.somleve);
-        UnloadSound(game->bola.sompesado);
         game->jogador1.posicao = (Vector2) {game->screen_width/2 - 175, game->screen_height/2};
         game->jogador2.posicao = (Vector2) {game->screen_width/2 + 175, game->screen_height/2};
         game->bola.posicao = (Vector2) {game->screen_width/2, game->screen_height/2};
@@ -419,6 +430,7 @@ void animacaoFinal(GameState *game){
         game->jogador1.velocidade = Vector2Add(game->jogador1.velocidade, game->jogador1.atracao);
         game->jogador2.velocidade = Vector2Add(game->jogador2.velocidade, game->jogador2.atracao);
         if(game->opacidadefade>1.5f){
+            UnloadSound(game->bola.som);
             game->rodando = 0;
         }
     }
