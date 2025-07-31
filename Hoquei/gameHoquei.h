@@ -50,13 +50,14 @@ typedef struct GameState{
     Gol gol2;
     Divisoria divisoria;
     Circulo circuloesq, circulomeio, circulodir;
-    float aceleracao, hue, atrito, vel_max, vel_max_bola, opacidade, opacidadefade, sobreposicao, proj, G;
+    float volumemusicadefundo, aceleracao, hue, atrito, vel_max, vel_max_bola, opacidade, opacidadefade, sobreposicao, proj, G;
     int screen_width, screen_height;
-    int flagmusica, rodando, terminou, contador, grossuralinha, fps;
+    int flagcontador, flagmusica, rodando, terminou, contador, grossuralinha, fps;
     double tempoatual;
     char tempo[20], placar[6], textfps[10], contregressiva[4], vencedor[20];
     Color colorbackground, colortext, colormidline, fadecolor;
     Music musicadefundo;
+    Sound somcontagem;
     Vector2 vetorcolisao;
     Vector2 n;
     Vector2 v_rel;
@@ -66,7 +67,7 @@ typedef struct GameState{
 
 void iniciarJogo(GameState *game);
 
-void atualizaCores(GameState *game);
+void atualizaCoresSom(GameState *game);
 
 void controlarJogadores (GameState *game);
 

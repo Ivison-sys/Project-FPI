@@ -17,7 +17,7 @@ void gameHoquei(){
     while(!WindowShouldClose() && game.rodando){
         BeginDrawing();
 
-        atualizaCores(&game);
+        atualizaCoresSom(&game);
         controlarJogadores(&game);
         atualizarContador(&game);
         verificarColisoes(&game);
@@ -104,6 +104,7 @@ void iniciarJogo(GameState *game){
     game->proj = 0.0f;
     game->G = 400.0f;
     game->flagmusica = 1;
+    game->flagcontador = 1;
     game->rodando = 1;
     game->terminou = 0;
     game->contador = 6;
@@ -112,9 +113,22 @@ void iniciarJogo(GameState *game){
     game->opacidadefade = 0.0f;
     game->colorbackground = BLACK;
     game->colortext = RAYWHITE;
+    game->musicadefundo = LoadMusicStream("Hoquei/src_sounds/musicadefundo.wav");
+    game->somcontagem = LoadSound("Hoquei/src_sounds/contagem.wav");
+    game->volumemusicadefundo = 1.0f;
 }
 
-void atualizaCores(GameState *game){
+void atualizaCoresSom(GameState *game){
+    if(game->contador == 3 && game->flagcontador){ 
+        PlaySound(game->somcontagem);
+        game->flagcontador = 0;
+    }    
+    if(game->contador==0 && game->flagmusica){
+        game->flagmusica = 0;
+        PlayMusicStream(game->musicadefundo);
+        SetMusicVolume(game->musicadefundo, game->volumemusicadefundo);
+    }
+    UpdateMusicStream(game->musicadefundo);
     if(game->terminou == 0){
         if(game->opacidade<1){
             SetWindowOpacity(game->opacidade);
@@ -388,11 +402,11 @@ void desenharJogo(GameState *game){
         sprintf(game->contregressiva, "%d", game->contador);
         DrawText(game->contregressiva, game->screen_width/2 - MeasureText(game->contregressiva, 150)/2, game->screen_height/2, 150, RAYWHITE);
     }
-    if(game->jogador1.gols == 5){
+    if(game->jogador1.gols == 7){
         sprintf(game->vencedor, "JOGADOR 1 VENCEU!!!");
         DrawText(game->vencedor, game->screen_width/2  - MeasureText(game->vencedor, 80)/2, game->screen_height/2, 80, RAYWHITE);
     }
-    if(game->jogador2.gols == 5){
+    if(game->jogador2.gols == 7){
         sprintf(game->vencedor, "JOGADOR 2 VENCEU!!!");
         DrawText(game->vencedor, game->screen_width/2 - MeasureText(game->vencedor, 80)/2, game->screen_height/2 , 80, RAYWHITE);    
     }
@@ -400,7 +414,7 @@ void desenharJogo(GameState *game){
     DrawRectangle(0,0,game->screen_width, game->screen_height, game->fadecolor);
 }
 void animacaoFinal(GameState *game){
-    if (game->terminou==0 && (game->jogador1.gols == 5 || game->jogador2.gols == 5)){
+    if (game->terminou==0 && (game->jogador1.gols == 7 || game->jogador2.gols == 7)){
         game->jogador1.posicao = (Vector2) {game->screen_width/2 - 175, game->screen_height/2};
         game->jogador2.posicao = (Vector2) {game->screen_width/2 + 175, game->screen_height/2};
         game->bola.posicao = (Vector2) {game->screen_width/2, game->screen_height/2};
@@ -425,6 +439,9 @@ void animacaoFinal(GameState *game){
     if(game->terminou){
         game->fadecolor = Fade(BLACK, game->opacidadefade);
         game->opacidadefade+=0.003f;
+        game->volumemusicadefundo-=0.008f;
+        if(game->volumemusicadefundo<=0.0f) game->volumemusicadefundo = 0.0f;
+        SetMusicVolume(game->musicadefundo, game->volumemusicadefundo);
         game->jogador1.coefgravidade = GetFrameTime() * game->G * 1/ Vector2Length(Vector2Subtract(game->bola.posicao, game->jogador1.posicao));
         game->jogador2.coefgravidade = GetFrameTime() * game->G * 1/ Vector2Length(Vector2Subtract(game->bola.posicao, game->jogador2.posicao));
         game->jogador1.atracao = Vector2Scale(Vector2Normalize(Vector2Subtract(game->bola.posicao, game->jogador1.posicao)), game->jogador1.coefgravidade);
@@ -433,6 +450,7 @@ void animacaoFinal(GameState *game){
         game->jogador2.velocidade = Vector2Add(game->jogador2.velocidade, game->jogador2.atracao);
         if(game->opacidadefade>1.5f){
             UnloadSound(game->bola.som);
+            UnloadMusicStream(game->musicadefundo);
             game->rodando = 0;
         }
     }
