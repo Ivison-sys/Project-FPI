@@ -439,7 +439,7 @@ void animacaoFinal(GameState *game){
     if(game->terminou){
         game->fadecolor = Fade(BLACK, game->opacidadefade);
         game->opacidadefade+=0.003f;
-        game->volumemusicadefundo-=0.008f;
+        game->volumemusicadefundo-=0.006f;
         if(game->volumemusicadefundo<=0.0f) game->volumemusicadefundo = 0.0f;
         SetMusicVolume(game->musicadefundo, game->volumemusicadefundo);
         game->jogador1.coefgravidade = GetFrameTime() * game->G * 1/ Vector2Length(Vector2Subtract(game->bola.posicao, game->jogador1.posicao));
