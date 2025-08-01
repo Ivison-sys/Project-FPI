@@ -115,7 +115,7 @@ void iniciarJogo(GameState *game){
     game->colortext = RAYWHITE;
     game->musicadefundo = LoadMusicStream("Hoquei/src_sounds/musicadefundo.wav");
     game->somcontagem = LoadSound("Hoquei/src_sounds/contagem.wav");
-    game->volumemusicadefundo = 1.0f;
+    game->volumemusicadefundo = 0.5f;
 }
 
 void atualizaCoresSom(GameState *game){
@@ -420,11 +420,11 @@ void animacaoFinal(GameState *game){
         game->bola.posicao = (Vector2) {game->screen_width/2, game->screen_height/2};
         game->colorbackground = BLACK;
         game->colortext = RAYWHITE;
-        game->jogador1.cor = ORANGE;
-        game->jogador2.cor = ORANGE;
+        game->jogador1.cor = BLUE;
+        game->jogador2.cor = BLUE;
         game->bola.cor = YELLOW;
-        game->gol1.cor = RED;
-        game->gol2.cor = RED;
+        game->gol1.cor = YELLOW;
+        game->gol2.cor = YELLOW;
         game->divisoria.cor = game->colorbackground;
         game->circuloesq.cor = game->colorbackground;
         game->circulomeio.cor = game->colorbackground;
@@ -439,7 +439,7 @@ void animacaoFinal(GameState *game){
     if(game->terminou){
         game->fadecolor = Fade(BLACK, game->opacidadefade);
         game->opacidadefade+=0.003f;
-        game->volumemusicadefundo-=0.0032f;
+        game->volumemusicadefundo-=0.0016f;
         if(game->volumemusicadefundo<=0.0f) game->volumemusicadefundo = 0.0f;
         SetMusicVolume(game->musicadefundo, game->volumemusicadefundo);
         game->jogador1.coefgravidade = GetFrameTime() * game->G * 1/ Vector2Length(Vector2Subtract(game->bola.posicao, game->jogador1.posicao));
