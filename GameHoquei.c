@@ -420,11 +420,11 @@ void animacaoFinal(GameState *game){
         game->bola.posicao = (Vector2) {game->screen_width/2, game->screen_height/2};
         game->colorbackground = BLACK;
         game->colortext = RAYWHITE;
-        game->jogador1.cor = BLUE;
-        game->jogador2.cor = BLUE;
+        game->jogador1.cor = ORANGE;
+        game->jogador2.cor = ORANGE;
         game->bola.cor = YELLOW;
-        game->gol1.cor = YELLOW;
-        game->gol2.cor = YELLOW;
+        game->gol1.cor = RED;
+        game->gol2.cor = RED;
         game->divisoria.cor = game->colorbackground;
         game->circuloesq.cor = game->colorbackground;
         game->circulomeio.cor = game->colorbackground;
