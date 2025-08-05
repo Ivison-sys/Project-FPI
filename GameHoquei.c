@@ -400,7 +400,7 @@ void desenharJogo(GameState *game){
 
     if(game->contador>0 && game->contador<=3){
         sprintf(game->contregressiva, "%d", game->contador);
-        DrawText(game->contregressiva, game->screen_width/2 - MeasureText(game->contregressiva, 150)/2, game->screen_height/2, 150, RAYWHITE);
+        DrawText(game->contregressiva, game->screen_width/2 - MeasureText(game->contregressiva, 150)/2, 3*game->screen_height/4, 150, RAYWHITE);
     }
     if(game->jogador1.gols == 7){
         sprintf(game->vencedor, "JOGADOR 1 VENCEU!!!");
