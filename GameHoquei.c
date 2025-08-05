@@ -45,7 +45,8 @@ void iniciarJogo(GameState *game){
         .coefgravidade = 0.0f,
         .gols = 0
     };
-
+    strncpy(game->jogador1.nome, "DUDU", sizeof(game->jogador1.nome));
+    game->jogador1.nome[sizeof(game->jogador1.nome)-1]='\0';
     game->jogador2 = (Jogador) {
         .posicao = {game->screen_width - 175, game->screen_height/2},
         .velocidade = {0.0f, 0.0f},
@@ -55,7 +56,8 @@ void iniciarJogo(GameState *game){
         .coefgravidade = 0.0f,
         .gols = 0
     };
-
+    strncpy(game->jogador2.nome, "LÉO", sizeof(game->jogador2.nome));
+    game->jogador2.nome[sizeof(game->jogador2.nome)-1]='\0';
     game->bola = (Bola) {
         .posicao = {game->screen_width/2, game->screen_height/2},
         .velocidade = {0.0f, 0.0f},
@@ -403,11 +405,11 @@ void desenharJogo(GameState *game){
         DrawText(game->contregressiva, game->screen_width/2 - MeasureText(game->contregressiva, 150)/2, 3*game->screen_height/4, 150, RAYWHITE);
     }
     if(game->jogador1.gols == 7){
-        sprintf(game->vencedor, "JOGADOR 1 VENCEU!!!");
+        sprintf(game->vencedor, "%s VENCEU!!!", game->jogador1.nome);
         DrawText(game->vencedor, game->screen_width/2  - MeasureText(game->vencedor, 80)/2, game->screen_height/2, 80, RAYWHITE);
     }
     if(game->jogador2.gols == 7){
-        sprintf(game->vencedor, "JOGADOR 2 VENCEU!!!");
+        sprintf(game->vencedor, "%s VENCEU!!!", game->jogador2.nome);
         DrawText(game->vencedor, game->screen_width/2 - MeasureText(game->vencedor, 80)/2, game->screen_height/2 , 80, RAYWHITE);    
     }
 

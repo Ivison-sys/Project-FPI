@@ -4,6 +4,7 @@
 #include "../lib/raylib.h"
 
 typedef struct Jogador{
+    char nome[8];
     Vector2 posicao;
     Vector2 velocidade;
     Vector2 atracao;
