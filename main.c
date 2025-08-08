@@ -1,8 +1,8 @@
 #include "Memoria/gameMemoria.h"
-#include "Golf/golf.h"
+#include "Golf/gameGolf.h"
 #include "Hoquei/gameHoquei.h"
 
 int main(){
-    GameGolf();
+    gameGolf();
     return 0;
 }

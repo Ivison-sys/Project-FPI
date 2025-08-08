@@ -99,5 +99,5 @@ void DescarregarRecursos(GameAssets *assets);
 void InicializarJogo(Game *game);
 void AtualizarJogo(Game *game, GameAssets *assets);
 void DesenharJogo(const Game *game); // 'const' pois o desenho não deve alterar o estado
-void GameGolf(void); 
+void gameGolf(); 
 #endif // GAME_H

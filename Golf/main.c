@@ -1,6 +1,6 @@
 // main.c
 #include <raylib.h>
-#include "golf.h" // Inclui nosso módulo de jogo
+#include "gameGolf.h" // Inclui nosso módulo de jogo
 
 int main(void)
 {
