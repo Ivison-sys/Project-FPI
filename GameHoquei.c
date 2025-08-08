@@ -32,7 +32,7 @@ int gameHoquei(){
     if(game.jogador1.gols==7){
         return 1;
     }
-    else{
+    else if(game.jogador2.gols==7){
         return 2;
     }
 }
