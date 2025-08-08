@@ -1,4 +1,3 @@
-// golf.c
 #include "Golf/gameGolf.h"
 #include <raymath.h>
 #include <stdio.h>
@@ -18,12 +17,17 @@
 #define NUM_PLATAFORMAS 3
 #define VELOCIDADE_ANIMACAO 1.5f
 #define MAX_COLISAO 5
-#define MAX_COLISAO 5
+
+
+#define MAX_NUVENS 10
+static Texture2D cenarioGrama;
 
 // Cores
 static const Color COR_FUNDO = {129, 204, 184, 255};
 static const Color COR_JOGADOR1 = {0, 121, 241, 255};
 static const Color COR_JOGADOR2 = {230, 41, 55, 255};
+Color Marrom = {114, 54, 0, 255};
+
 
 // Controles
 static const int teclas_jogadores[CONTAGEM_JOGADORES] = {KEY_A, KEY_L};
@@ -31,6 +35,54 @@ static const int teclas_jogadores[CONTAGEM_JOGADORES] = {KEY_A, KEY_L};
 //----------------------------------------------------------------------------------
 // FUNÇÕES PRIVADAS (estáticas)
 //----------------------------------------------------------------------------------
+
+//----------------------------------------------------------------------------------
+// FUNÇÕES PARA AS NUVENS
+//----------------------------------------------------------------------------------
+
+static void InicializarNuvens(Game *game)
+{
+    for (int i = 0; i < MAX_NUVENS; i++)
+    {
+        game->nuvens[i].posicao.x = GetRandomValue(-LARGURA_TELA, LARGURA_TELA); // Começam em posições variadas, algumas fora da tela
+        game->nuvens[i].posicao.y = GetRandomValue(20, 150);
+        game->nuvens[i].raio = GetRandomValue(15, 40);
+        game->nuvens[i].velocidade = GetRandomValue(20, 50); // Velocidades diferentes para um efeito de profundidade
+    }
+}
+
+static void AtualizarNuvens(Game *game)
+{
+    float delta = GetFrameTime();
+    for (int i = 0; i < MAX_NUVENS; i++)
+    {
+        // Move a nuvem para a esquerda
+        game->nuvens[i].posicao.x -= game->nuvens[i].velocidade * delta;
+
+        // Se a nuvem saiu completamente da tela pela esquerda, a reposiciona na direita
+        // A checagem de "raio * 4" garante que a nuvem (composta por vários círculos) suma por completo
+        if (game->nuvens[i].posicao.x < -game->nuvens[i].raio * 4)
+        {
+            game->nuvens[i].posicao.x = LARGURA_TELA + game->nuvens[i].raio;
+            // Opcional: dar uma nova altura e velocidade para maior variedade
+            game->nuvens[i].posicao.y = GetRandomValue(20, 150);
+            game->nuvens[i].velocidade = GetRandomValue(20, 50);
+        }
+    }
+}
+
+static void DesenharNuvens(const Game *game)
+{
+    for (int i = 0; i < MAX_NUVENS; i++)
+    {
+        // Desenha uma nuvem simples e estilizada com 3 círculos semi-transparentes
+        DrawCircle(game->nuvens[i].posicao.x, game->nuvens[i].posicao.y, game->nuvens[i].raio, Fade(WHITE, 0.9f));
+        DrawCircle(game->nuvens[i].posicao.x + game->nuvens[i].raio, game->nuvens[i].posicao.y + 5, game->nuvens[i].raio * 0.8f, Fade(WHITE, 0.8f));
+        DrawCircle(game->nuvens[i].posicao.x - game->nuvens[i].raio, game->nuvens[i].posicao.y + 2, game->nuvens[i].raio * 0.7f, Fade(WHITE, 0.8f));
+        
+    }
+}
+
 static void CarregarPlataformas(Plataforma plataformas[NUM_PLATAFORMAS])
 {
     memset(plataformas, 0, sizeof(Plataforma) * NUM_PLATAFORMAS);
@@ -70,8 +122,8 @@ static void ReiniciarJogo(Game *game)
         game->lancadores[i] = (Lancador){0, 0, 1, 1, NAO_MIRANDO};
         game->pontuacoes[i] = 0;
     }
-    game->jogador_atual = 0;
-    game->estadoAtual = JOGANDO;
+    game->jogador_atual = 0; // preserva para compatibilidade, mas não usado para jogabilidade simultânea
+    game->estadoAtual = JOGANDO_G;
     game->vencedor = -1;
     
     // Resetar posições das plataformas se necessário
@@ -116,9 +168,11 @@ static void DesenharTelaVitoria(int vencedor)
 
 void CarregarRecursos(GameAssets *assets)
 {
-    assets->som_tiro = LoadSound("resources/taco.wav");
-    assets->som_ponto = LoadSound("resources/queda_buraco.wav");
-    assets->som_agua = LoadSound("resources/water.wav");
+    assets->som_tiro = LoadSound("Golf/sons/taco.wav");
+    assets->som_ponto = LoadSound("Golf/sons/queda_buraco.wav");
+    assets->som_agua = LoadSound("Golf/sons/water.wav");
+    cenarioGrama = LoadTexture("Golf/piso_gramado.png");
+    
 }
 
 void DescarregarRecursos(GameAssets *assets)
@@ -126,22 +180,27 @@ void DescarregarRecursos(GameAssets *assets)
     UnloadSound(assets->som_tiro);
     UnloadSound(assets->som_ponto);
     UnloadSound(assets->som_agua);
+    UnloadTexture(cenarioGrama);
 }
 
 void InicializarJogo(Game *game)
 {
-    game->posicoes_iniciais[0] = (Vector2){ 200.0f, ALTURA_TELA / 2.0f };
-    game->posicoes_iniciais[1] = (Vector2){ LARGURA_TELA - 200.0f, ALTURA_TELA / 2.0f };
+    game->posicoes_iniciais[0] = (Vector2){ 200.0f-5, (ALTURA_TELA / 2.0f)-5 };
+    game->posicoes_iniciais[1] = (Vector2){ LARGURA_TELA - 195.0f, (ALTURA_TELA / 2.0f)-5 };
     
     game->agua = (Rectangle){ 200, ALTURA_TELA / 2.0f + 200, LARGURA_TELA - 400, ALTURA_TELA/2 };
-
+    // Inicialização das nuvens.
+    InicializarNuvens(game); 
     ReiniciarJogo(game); // ReiniciarJogo contém a lógica para setar o estado inicial
 }
 
 void AtualizarJogo(Game *game, GameAssets *assets)
 {
+    // Função para atualizar nuvens.
+    AtualizarNuvens(game);
+
     float bola_parada = 3.0;
-    if (game->estadoAtual == JOGANDO)
+    if (game->estadoAtual == JOGANDO_G)
     {
         float delta = GetFrameTime();
         
@@ -162,124 +221,126 @@ void AtualizarJogo(Game *game, GameAssets *assets)
             }
         }
         
-        // --- Lógica do Jogador Atual ---
-        Bola *bola = &game->jogadores[game->jogador_atual];
-        Lancador *lancador = &game->lancadores[game->jogador_atual];
-        
-        if (!bola->lancada) {
-            switch(lancador->estado)
-            {
-                case NAO_MIRANDO:
-                    if (IsKeyPressed(teclas_jogadores[game->jogador_atual])) {
-                        lancador->estado = MIRANDO_ANGULO;
-                        if (game->jogador_atual == 0) {
-                            lancador->angulo = 0.0f; lancador->direcao_angulo = -1;
+        // --- Lógica PARA TODOS OS JOGADORES (simultâneo) ---
+        Plataforma *plataforma_ativa = &game->plataformas[game->indice_plataforma_atual];
+
+        for (int pj = 0; pj < CONTAGEM_JOGADORES; pj++) {
+            Bola *bola = &game->jogadores[pj];
+            Lancador *lancador = &game->lancadores[pj];
+
+            if (!bola->lancada) {
+                switch(lancador->estado)
+                {
+                    case NAO_MIRANDO:
+                        if (IsKeyPressed(teclas_jogadores[pj])) {
+                            lancador->estado = MIRANDO_ANGULO;
+                            if (pj == 0) {
+                                lancador->angulo = 0.0f; lancador->direcao_angulo = -1;
+                            } else {
+                                lancador->angulo = -180.0f; lancador->direcao_angulo = 1;
+                            }
+                        }
+                        break;
+                    case MIRANDO_ANGULO:
+                        lancador->angulo += VELOCIDADE_ANGULO_LANCAMENTO * lancador->direcao_angulo * delta;
+                        if (pj == 0) {
+                            if (lancador->angulo <= -90.0f || lancador->angulo >= 0.0f) {
+                                lancador->direcao_angulo *= -1;
+                                lancador->angulo = Clamp(lancador->angulo, -90.0f, 0.0f);
+                            }
                         } else {
-                            lancador->angulo = -180.0f; lancador->direcao_angulo = 1;
+                            if (lancador->angulo >= -90.0f || lancador->angulo <= -180.0f) {
+                                lancador->direcao_angulo *= -1;
+                                lancador->angulo = Clamp(lancador->angulo, -180.0f, -90.0f);
+                            }
+                        }
+                        if (IsKeyPressed(teclas_jogadores[pj])) {
+                            lancador->estado = AJUSTANDO_POTENCIA;
+                            lancador->potencia = 0; lancador->direcao_potencia = 1;
+                        }
+                        break;
+                    case AJUSTANDO_POTENCIA:
+                        lancador->potencia += VELOCIDADE_LANCAMENTO * lancador->direcao_potencia * delta;
+                        if (lancador->potencia >= 100.0f || lancador->potencia <= 0.0f) {
+                            lancador->direcao_potencia *= -1;
+                            lancador->potencia = Clamp(lancador->potencia, 0.0f, 100.0f);
+                        }
+                        if (IsKeyPressed(teclas_jogadores[pj])) {
+                            bola->lancada = true;
+                            float angulo_rad = lancador->angulo * DEG2RAD;
+                            float vel_inicial = lancador->potencia * POTENCIA_LANCAMENTO;
+                            bola->velocidade = (Vector2){ cosf(angulo_rad) * vel_inicial, sinf(angulo_rad) * vel_inicial };
+                            PlaySound(assets->som_tiro);
+                            lancador->estado = NAO_MIRANDO;
+                        }
+                        break;
+                }
+            } else { // Bola foi lançada
+                // --- Física e Colisão ---
+                bola->posicao_anterior = bola->posicao;
+                bola->velocidade.y += GRAVIDADE * delta;
+                bola->posicao.x += bola->velocidade.x * 1.8f * delta;
+                bola->posicao.y += bola->velocidade.y * 1.8f * delta;
+                
+                for (int i = 0; i < plataforma_ativa->num_partes_colisao; i++) {
+                    Rectangle parte = plataforma_ativa->partes_colisao[i];
+                    parte.y += plataforma_ativa->deslocamento_y;
+                    if (CheckCollisionCircleRec(bola->posicao, bola->raio, parte)) {
+                        if (bola->posicao_anterior.y + bola->raio <= parte.y) {
+                            bola->velocidade.y = 0; bola->posicao.y = parte.y - bola->raio;
+                            bola->velocidade.x *= ATRITO;
+                        } else {
+                            bola->velocidade.x *= -0.9f;
+                            if (bola->posicao.x < parte.x + parte.width / 2) bola->posicao.x = parte.x - bola->raio;
+                            else bola->posicao.x = parte.x + parte.width + bola->raio;
                         }
                     }
-                    break;
-                case MIRANDO_ANGULO:
-                    lancador->angulo += VELOCIDADE_ANGULO_LANCAMENTO * lancador->direcao_angulo * delta;
-                    if (game->jogador_atual == 0) {
-                        if (lancador->angulo <= -90.0f || lancador->angulo >= 0.0f) {
-                            lancador->direcao_angulo *= -1;
-                            lancador->angulo = Clamp(lancador->angulo, -90.0f, 0.0f);
-                        }
+                }
+                for (int i = 0; i < plataforma_ativa->num_linhas_colisao; i++) {
+                    Vector2 p1 = plataforma_ativa->linhas_colisao[i][0];
+                    Vector2 p2 = plataforma_ativa->linhas_colisao[i][1];
+                    p1.y += plataforma_ativa->deslocamento_y;
+                    p2.y += plataforma_ativa->deslocamento_y;
+                    if (CheckCollisionCircleLine(bola->posicao, bola->raio, p1, p2)) {
+                        ResolverColisaoBolaLinha(bola, p1, p2);
+                    }
+                }
+
+                // --- Reset e Pontuação ---
+                bool resetar_bola = false;
+                Rectangle gatilho_buraco = plataforma_ativa->area_buraco;
+                gatilho_buraco.y += plataforma_ativa->deslocamento_y;
+
+                if (CheckCollisionCircleRec(bola->posicao, bola->raio, gatilho_buraco)) {
+                    game->pontuacoes[pj]++;
+                    PlaySound(assets->som_ponto);
+                    resetar_bola = true;
+                    if (game->pontuacoes[pj] >= PONTUACAO_PARA_VENCER) {
+                        game->vencedor = pj;
+                        game->estadoAtual = FIM_DE_JOGO;
                     } else {
-                        if (lancador->angulo >= -90.0f || lancador->angulo <= -180.0f) {
-                            lancador->direcao_angulo *= -1;
-                            lancador->angulo = Clamp(lancador->angulo, -180.0f, -90.0f);
+                        if (!game->plataforma_esta_animando) game->plataforma_esta_animando = true;
+                    }
+                }
+
+                if(CheckCollisionCircleRec(bola->posicao, bola->raio, game->agua)) {
+                    for (int i = 0; i < MAX_ONDULACOES; i++) {
+                        if (!game->ondulacoes[i].ativa) {
+                            game->ondulacoes[i] = (Ondulacao){ bola->posicao, 5.0f, 1.0f, true };
+                            PlaySound(assets->som_agua); break;
                         }
                     }
-                    if (IsKeyPressed(teclas_jogadores[game->jogador_atual])) {
-                        lancador->estado = AJUSTANDO_POTENCIA;
-                        lancador->potencia = 0; lancador->direcao_potencia = 1;
-                    }
-                    break;
-                case AJUSTANDO_POTENCIA:
-                    lancador->potencia += VELOCIDADE_LANCAMENTO * lancador->direcao_potencia * delta;
-                    if (lancador->potencia >= 100.0f || lancador->potencia <= 0.0f) {
-                        lancador->direcao_potencia *= -1;
-                        lancador->potencia = Clamp(lancador->potencia, 0.0f, 100.0f);
-                    }
-                    if (IsKeyPressed(teclas_jogadores[game->jogador_atual])) {
-                        bola->lancada = true;
-                        float angulo_rad = lancador->angulo * DEG2RAD;
-                        float vel_inicial = lancador->potencia * POTENCIA_LANCAMENTO;
-                        bola->velocidade = (Vector2){ cosf(angulo_rad) * vel_inicial, sinf(angulo_rad) * vel_inicial };
-                        PlaySound(assets->som_tiro);
-                        lancador->estado = NAO_MIRANDO;
-                    }
-                    break;
-            }
-        } else { // Bola foi lançada
-            // --- Física e Colisão ---
-            bola->posicao_anterior = bola->posicao;
-            bola->velocidade.y += GRAVIDADE * delta;
-            bola->posicao.x += bola->velocidade.x * 1.8f * delta;
-            bola->posicao.y += bola->velocidade.y * 1.8f * delta;
-            
-            Plataforma *plataforma_ativa = &game->plataformas[game->indice_plataforma_atual];
-            
-            for (int i = 0; i < plataforma_ativa->num_partes_colisao; i++) {
-                Rectangle parte = plataforma_ativa->partes_colisao[i];
-                parte.y += plataforma_ativa->deslocamento_y;
-                if (CheckCollisionCircleRec(bola->posicao, bola->raio, parte)) {
-                    if (bola->posicao_anterior.y + bola->raio <= parte.y) {
-                        bola->velocidade.y = 0; bola->posicao.y = parte.y - bola->raio;
-                        bola->velocidade.x *= ATRITO;
-                    } else {
-                        bola->velocidade.x *= -0.9f;
-                        if (bola->posicao.x < parte.x + parte.width / 2) bola->posicao.x = parte.x - bola->raio;
-                        else bola->posicao.x = parte.x + parte.width + bola->raio;
-                    }
                 }
-            }
-            for (int i = 0; i < plataforma_ativa->num_linhas_colisao; i++) {
-                Vector2 p1 = plataforma_ativa->linhas_colisao[i][0];
-                Vector2 p2 = plataforma_ativa->linhas_colisao[i][1];
-                p1.y += plataforma_ativa->deslocamento_y;
-                p2.y += plataforma_ativa->deslocamento_y;
-                if (CheckCollisionCircleLine(bola->posicao, bola->raio, p1, p2)) {
-                    ResolverColisaoBolaLinha(bola, p1, p2);
+
+                if (fabsf(bola->velocidade.x) < bola_parada && fabsf(bola->velocidade.y) < bola_parada) resetar_bola = true;
+                if (bola->posicao.y > ALTURA_TELA || bola->posicao.x < 0 || bola->posicao.x > LARGURA_TELA) resetar_bola = true;
+                
+                if (resetar_bola && game->estadoAtual == JOGANDO_G) {
+                    bola->lancada = false;
+                    bola->posicao = game->posicoes_iniciais[pj];
+                    bola->velocidade = (Vector2){0, 0};
+                    // NÃO TROCA DE JOGADOR: modo simultâneo
                 }
-            }
-
-            // --- Reset e Pontuação ---
-            bool resetar_bola = false;
-            Rectangle gatilho_buraco = plataforma_ativa->area_buraco;
-            gatilho_buraco.y += plataforma_ativa->deslocamento_y;
-
-            if (CheckCollisionCircleRec(bola->posicao, bola->raio, gatilho_buraco)) {
-                game->pontuacoes[game->jogador_atual]++;
-                PlaySound(assets->som_ponto);
-                resetar_bola = true;
-                if (game->pontuacoes[game->jogador_atual] >= PONTUACAO_PARA_VENCER) {
-                    game->vencedor = game->jogador_atual;
-                    game->estadoAtual = FIM_DE_JOGO;
-                } else {
-                    if (!game->plataforma_esta_animando) game->plataforma_esta_animando = true;
-                }
-            }
-
-            if(CheckCollisionCircleRec(bola->posicao, bola->raio, game->agua)) {
-                for (int i = 0; i < MAX_ONDULACOES; i++) {
-                    if (!game->ondulacoes[i].ativa) {
-                        game->ondulacoes[i] = (Ondulacao){ bola->posicao, 5.0f, 1.0f, true };
-                        PlaySound(assets->som_agua); break;
-                    }
-                }
-            }
-
-            if (fabsf(bola->velocidade.x) < bola_parada && fabsf(bola->velocidade.y) < bola_parada) resetar_bola = true;
-            if (bola->posicao.y > ALTURA_TELA || bola->posicao.x < 0 || bola->posicao.x > LARGURA_TELA) resetar_bola = true;
-            
-            if (resetar_bola && game->estadoAtual == JOGANDO) {
-                bola->lancada = false;
-                bola->posicao = game->posicoes_iniciais[game->jogador_atual];
-                bola->velocidade = (Vector2){0, 0};
-                game->jogador_atual = (game->jogador_atual + 1) % CONTAGEM_JOGADORES;
             }
         }
         
@@ -303,12 +364,22 @@ void AtualizarJogo(Game *game, GameAssets *assets)
 void DesenharJogo(const Game *game)
 {
     ClearBackground(COR_FUNDO);
+
+    // ADICIONE ESTA LINHA AQUI
+    DesenharNuvens(game);
+    
+    
     
     // Cenário
-    DrawRectangle(0, ALTURA_TELA / 2, 200, ALTURA_TELA / 2, DARKGRAY);
-    DrawRectangle(LARGURA_TELA - 200, ALTURA_TELA / 2, 200, ALTURA_TELA / 2, DARKGRAY);
+    DrawRectangle(0, ALTURA_TELA / 2, 200, ALTURA_TELA / 2, Marrom);
+    DrawRectangle(LARGURA_TELA - 200, ALTURA_TELA / 2, 200, ALTURA_TELA / 2, Marrom);
     DrawRectangleRec(game->agua, (Color){0, 100, 255, 180});
 
+    //tentando fazer um gramado
+    DrawTexture(cenarioGrama, LARGURA_TELA -200, 470, WHITE);
+    DrawTexture(cenarioGrama, 0, 470, WHITE);
+    
+    
     // Plataformas
     for (int idx_p = 0; idx_p < NUM_PLATAFORMAS; idx_p++) {
         const Plataforma *p = &game->plataformas[idx_p];
@@ -336,18 +407,21 @@ void DesenharJogo(const Game *game)
     }
     for (int i = 0; i < CONTAGEM_JOGADORES; i++) DrawCircleV(game->jogadores[i].posicao, game->jogadores[i].raio, game->jogadores[i].cor);
 
-    // Mira e Barra de Força
-    const Lancador *lancador = &game->lancadores[game->jogador_atual];
-    const Bola *bola_atual = &game->jogadores[game->jogador_atual];
-    if (!bola_atual->lancada && lancador->estado != NAO_MIRANDO) {
-        float angulo_rad = lancador->angulo * DEG2RAD;
-        Vector2 ponto_final = { bola_atual->posicao.x + cosf(angulo_rad) * 80, bola_atual->posicao.y + sinf(angulo_rad) * 80 };
-        DrawLineEx(bola_atual->posicao, ponto_final, 3.0f, MAROON);
-        
-        if (lancador->estado == AJUSTANDO_POTENCIA) {
-            DrawRectangle(10, 80, 200, 20, LIGHTGRAY);
-            DrawRectangle(10, 80, (int)(lancador->potencia * 2.0f), 20, RED);
-            DrawRectangleLines(10, 80, 200, 20, DARKGRAY);
+    // A Mira e Lançamento simultânea para ambos jogadores
+    for (int i = 0; i < CONTAGEM_JOGADORES; i++) {
+        const Lancador *l = &game->lancadores[i];
+        const Bola *b = &game->jogadores[i];
+        if (!b->lancada && l->estado != NAO_MIRANDO) {
+            float angulo_rad = l->angulo * DEG2RAD;
+            Vector2 ponto_final = { b->posicao.x + cosf(angulo_rad) * 80, b->posicao.y + sinf(angulo_rad) * 80 };
+            DrawLineEx(b->posicao, ponto_final, 3.0f, (i==0) ? COR_JOGADOR1 : COR_JOGADOR2);
+            
+            if (l->estado == AJUSTANDO_POTENCIA) {
+                // Será criada barras para ambos jogadores/ ainda preciso colocar uma das barras mais para lado
+                DrawRectangle(10, 80 + i*30, 200, 20, LIGHTGRAY);
+                DrawRectangle(10, 80 + i*30, (int)(l->potencia * 2.0f), 20, RED);
+                DrawRectangleLines(10, 80 + i*30, 200, 20, DARKGRAY);
+            }
         }
     }
     
@@ -356,26 +430,31 @@ void DesenharJogo(const Game *game)
     sprintf(texto_pontuacao, "JOGADOR 1: %d | JOGADOR 2: %d", game->pontuacoes[0], game->pontuacoes[1]);
     DrawText(texto_pontuacao, LARGURA_TELA / 2 - MeasureText(texto_pontuacao, 30) / 2, 10, 30, BLACK);
     
-    char texto_vez_jogador[128];
-    const char* instrucao = "";
-    switch(lancador->estado) {
-        case NAO_MIRANDO:        instrucao = "Pressione para mirar"; break;
-        case MIRANDO_ANGULO:     instrucao = "Pressione para travar o angulo"; break;
-        case AJUSTANDO_POTENCIA: instrucao = "Pressione para lancar"; break;
+    // Instrucao por jogador (mostra o estado atual de cada um)
+    for (int i = 0; i < CONTAGEM_JOGADORES; i++) {
+        const Lancador *l = &game->lancadores[i];
+        const char *instrucao = "";
+        switch(l->estado) {
+            case NAO_MIRANDO:        instrucao = "Pressione para mirar"; break;
+            case MIRANDO_ANGULO:     instrucao = "Pressione para travar o angulo"; break;
+            case AJUSTANDO_POTENCIA: instrucao = "Pressione para lancar"; break;
+        }
+        char linha[128];
+        sprintf(linha, "Jogador %d ('%c'): %s", i+1, (i==0)?'A':'L', instrucao);
+        // desenha à esquerda e direita
+        if (i == 0) DrawText(linha, 10, 40, 20, DARKGRAY);
+        else DrawText(linha, LARGURA_TELA - MeasureText(linha,20) - 10, 40, 20, DARKGRAY);
     }
-    sprintf(texto_vez_jogador, "Vez do Jogador %d ('%c') - %s", game->jogador_atual + 1, (game->jogador_atual == 0) ? 'A' : 'L', instrucao);
-    DrawText(texto_vez_jogador, 10, 10, 20, DARKGRAY);
     
-    if (game->jogador_atual == 0) {
-        DrawRectangle(LARGURA_TELA / 2 - MeasureText(texto_pontuacao, 30) / 2 - 10, 8, MeasureText("JOGADOR 1: 0", 30) + 15, 34, Fade(COR_JOGADOR1, 0.3f));
-    } else {
-        DrawRectangle(LARGURA_TELA / 2 - MeasureText(texto_pontuacao, 30) / 2 + MeasureText("JOGADOR 1: 0 | ", 30) - 5, 8, MeasureText("JOGADOR 2: 0", 30) + 15, 34, Fade(COR_JOGADOR2, 0.3f));
-    }
+    // Destaque de cor sobre o placar (apenas visual, não indica "vez")
+    DrawRectangle(LARGURA_TELA / 2 - MeasureText(texto_pontuacao, 30) / 2 - 10, 8, MeasureText("JOGADOR 1: 0", 30) + 15, 34, Fade(COR_JOGADOR1, 0.15f));
+    DrawRectangle(LARGURA_TELA / 2 + 5, 8, MeasureText("JOGADOR 2: 0", 30) + 15, 34, Fade(COR_JOGADOR2, 0.15f));
     
     if (game->estadoAtual == FIM_DE_JOGO) {
         DesenharTelaVitoria(game->vencedor);
     }
 }
+
 // game.c
 
 // ... (todo o código que já estava aqui, como AtualizarJogo, DesenharJogo, etc.)

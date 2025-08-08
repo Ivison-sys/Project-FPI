@@ -11,13 +11,20 @@
 #define ALTURA_TELA 940
 #define CONTAGEM_JOGADORES 2
 #define PONTUACAO_PARA_VENCER 5
+#define MAX_NUVENS 10
 
 //----------------------------------------------------------------------------------
 // ESTRUTURAS DE DADOS
 //----------------------------------------------------------------------------------
 
-typedef enum GameState {
-    JOGANDO,
+typedef struct Nuvem {
+    Vector2 posicao;
+    float raio;
+    float velocidade;
+} Nuvem;
+
+typedef enum GameState_G {
+    JOGANDO_G,
     FIM_DE_JOGO
 } GameState;
 
@@ -86,6 +93,9 @@ typedef struct Game {
 
     Ondulacao ondulacoes[10]; // MAX_ONDULACOES
     Rectangle agua;
+
+    // ADICIONE ESTA LINHA
+    Nuvem nuvens[MAX_NUVENS];
 
 } Game;
 
