@@ -177,7 +177,6 @@ Card** buscandoClick(Card** cards){
     Vector2 mouse = GetMousePosition();
     for(int i = 0; i < qtdCards; i++){
         if(CheckCollisionPointRec(mouse, cards[i]->retangulo) && cards[i]->estado == VERSO && !bugAtivo){
-            cards[i]->estado = FRENTE;
             PlaySound(somFlip);
             
             //   se clicou em bug
@@ -216,6 +215,7 @@ Card** buscandoClick(Card** cards){
                 esperando = true;
                 tempo = 1.0f;
             }
+            cards[i]->estado = FRENTE;
             break;
         }
     }

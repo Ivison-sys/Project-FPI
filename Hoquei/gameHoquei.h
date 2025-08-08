@@ -1,7 +1,7 @@
 #ifndef GAMEHOQUEI_H
 #define GAMEHOQUEI_H
 
-#include "../lib/raylib.h"
+#include "../Lib/raylib.h"
 void gameHoquei();
 
 #endif

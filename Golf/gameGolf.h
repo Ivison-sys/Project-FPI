@@ -1,6 +1,6 @@
 #ifndef GAMEGOLF_H
 #define GAMEGOLF_H
 
-#include "../lib/raylib.h"
+#include "../Lib/raylib.h"
 void gameGolf();
 #endif

@@ -1,6 +1,6 @@
 #ifndef GAMEMEMORIA_H
 #define GAMEMEMORIA_H
-#include "../lib/raylib.h"
+#include "../Lib/raylib.h"
 
 typedef enum{
     VERSO,
@@ -9,7 +9,7 @@ typedef enum{
 }StateCard;
 
 typedef enum{
-    MENU,g
+    MENU,
     PEDINDO_NOME_J1,
     PEDINDO_NOME_J2,
     JOGANDO,
