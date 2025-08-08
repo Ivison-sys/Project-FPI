@@ -5,6 +5,7 @@
 #include <string.h>
 #include <math.h>
 
+
 //----------------------------------------------------------------------------------
 // CONSTANTES INTERNAS AO MÓDULO
 //----------------------------------------------------------------------------------
@@ -71,7 +72,7 @@ static void ReiniciarJogo(Game *game)
         game->pontuacoes[i] = 0;
     }
     game->jogador_atual = 0;
-    game->estadoAtual = JOGANDO;
+    game->estadoAtual = JOGANDO_G;
     game->vencedor = -1;
     
     // Resetar posições das plataformas se necessário
@@ -141,7 +142,7 @@ void InicializarJogo(Game *game)
 void AtualizarJogo(Game *game, GameAssets *assets)
 {
     float bola_parada = 3.0;
-    if (game->estadoAtual == JOGANDO)
+    if (game->estadoAtual == JOGANDO_G)
     {
         float delta = GetFrameTime();
         
@@ -275,7 +276,7 @@ void AtualizarJogo(Game *game, GameAssets *assets)
             if (fabsf(bola->velocidade.x) < bola_parada && fabsf(bola->velocidade.y) < bola_parada) resetar_bola = true;
             if (bola->posicao.y > ALTURA_TELA || bola->posicao.x < 0 || bola->posicao.x > LARGURA_TELA) resetar_bola = true;
             
-            if (resetar_bola && game->estadoAtual == JOGANDO) {
+            if (resetar_bola && game->estadoAtual == JOGANDO_G) {
                 bola->lancada = false;
                 bola->posicao = game->posicoes_iniciais[game->jogador_atual];
                 bola->velocidade = (Vector2){0, 0};

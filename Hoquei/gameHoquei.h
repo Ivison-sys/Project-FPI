@@ -14,14 +14,14 @@ typedef struct Jogador{
     int gols;
 }Jogador;
 
-typedef struct Bola{
+typedef struct Bola_H{
     Vector2 posicao;
     Vector2 velocidade;
     Color cor;
     Sound som;
     float raio;
     
-}Bola;
+}Bola_H;
 
 typedef struct Gol{
     Vector2 inicio;
@@ -43,10 +43,10 @@ typedef struct Circulo{
 
 
 
-typedef struct GameState{
+typedef struct GameState_H{
     Jogador jogador1;
     Jogador jogador2;
-    Bola bola;
+    Bola_H bola;
     Gol gol1;
     Gol gol2;
     Divisoria divisoria;
@@ -64,21 +64,21 @@ typedef struct GameState{
     Vector2 v_rel;
     Vector2 variacao;
 
-}GameState;
+}GameState_H;
 
-void iniciarJogo(GameState *game);
+void iniciarJogo(GameState_H *game);
 
-void atualizaCoresSom(GameState *game);
+void atualizaCoresSom(GameState_H *game);
 
-void controlarJogadores (GameState *game);
+void controlarJogadores (GameState_H *game);
 
-void atualizarContador (GameState *game);
+void atualizarContador (GameState_H *game);
 
-void verificarColisoes (GameState *game);
+void verificarColisoes (GameState_H *game);
 
-void desenharJogo (GameState *game);
+void desenharJogo (GameState_H *game);
 
-void animacaoFinal (GameState *game);
+void animacaoFinal (GameState_H *game);
 
 void gameHoquei();
 

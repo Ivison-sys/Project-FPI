@@ -11,7 +11,7 @@ void gameHoquei(){
     /*if(!IsWindowFullscreen()){
         ToggleFullscreen();
     }*/
-    GameState game;
+    GameState_H game;
     iniciarJogo(&game);
 
     while(!WindowShouldClose() && game.rodando){
@@ -31,7 +31,7 @@ void gameHoquei(){
     CloseWindow();
 }
 
-void iniciarJogo(GameState *game){
+void iniciarJogo(GameState_H *game){
 
     game->screen_width = GetScreenWidth();
     game->screen_height = GetScreenHeight();
@@ -58,7 +58,7 @@ void iniciarJogo(GameState *game){
     };
     strncpy(game->jogador2.nome, "LÉO", sizeof(game->jogador2.nome));
     game->jogador2.nome[sizeof(game->jogador2.nome)-1]='\0';
-    game->bola = (Bola) {
+    game->bola = (Bola_H) {
         .posicao = {game->screen_width/2, game->screen_height/2},
         .velocidade = {0.0f, 0.0f},
         .cor = WHITE,
@@ -120,7 +120,7 @@ void iniciarJogo(GameState *game){
     game->volumemusicadefundo = 0.5f;
 }
 
-void atualizaCoresSom(GameState *game){
+void atualizaCoresSom(GameState_H *game){
     if(game->contador == 3 && game->flagcontador){ 
         PlaySound(game->somcontagem);
         game->flagcontador = 0;
@@ -152,7 +152,7 @@ void atualizaCoresSom(GameState *game){
 
 
 
-void atualizarContador(GameState *game){
+void atualizarContador(GameState_H *game){
     game->tempoatual = GetTime();
     game->fps = GetFPS();
     if(game->tempoatual >= 2 && game->tempoatual < 3){
@@ -170,7 +170,7 @@ void atualizarContador(GameState *game){
 
 }
 
-void controlarJogadores(GameState *game){
+void controlarJogadores(GameState_H *game){
 
     game->jogador1.posicao = Vector2Add(game->jogador1.posicao, game->jogador1.velocidade);
     game->jogador2.posicao = Vector2Add(game->jogador2.posicao, game->jogador2.velocidade);
@@ -235,7 +235,7 @@ void controlarJogadores(GameState *game){
     }
 }
 
-void verificarColisoes (GameState *game){
+void verificarColisoes (GameState_H *game){
     if(game->terminou==0){
         if (CheckCollisionCircles(game->jogador1.posicao, game->jogador1.raio, game->bola.posicao, game->bola.raio)) {
             if(Vector2Distance(game->jogador1.posicao, game->bola.posicao) > 0.0f){
@@ -364,7 +364,7 @@ void verificarColisoes (GameState *game){
 
 }
 
-void desenharJogo(GameState *game){
+void desenharJogo(GameState_H *game){
     ClearBackground(game->colorbackground);
 
     DrawCircleV(game->circuloesq.posicao, game->circuloesq.raio, game->circuloesq.cor);
@@ -415,7 +415,7 @@ void desenharJogo(GameState *game){
 
     DrawRectangle(0,0,game->screen_width, game->screen_height, game->fadecolor);
 }
-void animacaoFinal(GameState *game){
+void animacaoFinal(GameState_H *game){
     if (game->terminou==0 && (game->jogador1.gols == 7 || game->jogador2.gols == 7)){
         game->jogador1.posicao = (Vector2) {game->screen_width/2 - 175, game->screen_height/2};
         game->jogador2.posicao = (Vector2) {game->screen_width/2 + 175, game->screen_height/2};

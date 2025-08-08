@@ -27,11 +27,7 @@
 PROJECT_NAME       ?= GameName 
 RAYLIB_VERSION     ?= 3.8.0
 ## @TODO: Mude aqui para o caminho de onde está o raylib
-<<<<<<< HEAD
-RAYLIB_PATH        ?= C:/raylib\raylib\src
-=======
 RAYLIB_PATH        ?= C:/raylib/raylib/src
->>>>>>> hoquei
 
 # Define compiler path on Windows
 COMPILER_PATH      ?= C:/raylib/w64devkit/bin

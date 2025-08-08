@@ -16,8 +16,8 @@
 // ESTRUTURAS DE DADOS
 //----------------------------------------------------------------------------------
 
-typedef enum GameState {
-    JOGANDO,
+typedef enum GameState_G {
+    JOGANDO_G,
     FIM_DE_JOGO
 } GameState;
 
