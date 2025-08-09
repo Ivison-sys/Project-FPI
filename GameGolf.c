@@ -418,9 +418,16 @@ void DesenharJogo(const Game *game)
             
             if (l->estado == AJUSTANDO_POTENCIA) {
                 // Será criada barras para ambos jogadores/ ainda preciso colocar uma das barras mais para lado
-                DrawRectangle(10, 80 + i*30, 200, 20, LIGHTGRAY);
-                DrawRectangle(10, 80 + i*30, (int)(l->potencia * 2.0f), 20, RED);
-                DrawRectangleLines(10, 80 + i*30, 200, 20, DARKGRAY);
+                int largura = (int)(l->potencia * 2.0f);
+                DrawRectangle(10+i*1400, 80 + i, 200, 20, LIGHTGRAY);
+                if (i == 1) {
+                    // Começa no lado direito e vai preenchendo para a esquerda
+                    DrawRectangle(10 + i*1600-largura, 80 + i, largura, 20, RED);
+                } else {
+                    // Preenche normalmente da esquerda para a direita
+                    DrawRectangle(10 + i, 80 + i, largura, 20, RED);
+                }
+                DrawRectangleLines(10+i*1400, 80 + i, 200, 20, DARKGRAY);
             }
         }
     }
