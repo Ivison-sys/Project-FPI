@@ -17,8 +17,6 @@
 #define NUM_PLATAFORMAS 3
 #define VELOCIDADE_ANIMACAO 1.5f
 #define MAX_COLISAO 5
-
-
 #define MAX_NUVENS 10
 static Texture2D cenarioGrama;
 
@@ -31,10 +29,6 @@ Color Marrom = {114, 54, 0, 255};
 
 // Controles
 static const int teclas_jogadores[CONTAGEM_JOGADORES] = {KEY_A, KEY_L};
-
-//----------------------------------------------------------------------------------
-// FUNÇÕES PRIVADAS (estáticas)
-//----------------------------------------------------------------------------------
 
 //----------------------------------------------------------------------------------
 // FUNÇÕES PARA AS NUVENS
@@ -97,7 +91,7 @@ static void CarregarPlataformas(Plataforma plataformas[NUM_PLATAFORMAS])
     plataformas[0].deslocamento_y = ALTURA_TELA / 2.0f;
     plataformas[0].area_buraco = (Rectangle){ centro_x_plat - 25, 0, 50, 50 };
 
-    // --- Plataforma 1: Ladeiras e buraco central ---
+    // --- Plataforma 1: Ladeiras e buraco central 
     plataformas[1].num_partes_colisao = 2;
     plataformas[1].partes_colisao[0] = (Rectangle){ centro_x_plat - largura_total/2, -100, largura_pilar, altura_pilar };
     plataformas[1].partes_colisao[1] = (Rectangle){ centro_x_plat + largura_total/2 - largura_pilar, -100, largura_pilar, altura_pilar };
@@ -108,13 +102,13 @@ static void CarregarPlataformas(Plataforma plataformas[NUM_PLATAFORMAS])
     plataformas[1].linhas_colisao[1][0] = (Vector2){ centro_x_plat + 50, -20 };
     plataformas[1].linhas_colisao[1][1] = (Vector2){ centro_x_plat + largura_total/2 - largura_pilar, -100 };
 
-    // --- Plataforma 2: Buraco pequeno ---
+    // --- Plataforma 2: Buraco pequeno 
     plataformas[2].num_partes_colisao = 1;
     plataformas[2].partes_colisao[0] = (Rectangle){ centro_x_plat - 25, 0 , 50, ALTURA_TELA/2 };
     plataformas[2].area_buraco = (Rectangle){ centro_x_plat - 10, 0, 20, 20 };
     plataformas[2].deslocamento_y = ALTURA_TELA + 150;
 }
-
+// Função para reniciar o jogo
 static void ReiniciarJogo(Game *game)
 {
     for (int i = 0; i < CONTAGEM_JOGADORES; i++) {
@@ -149,7 +143,7 @@ static void ResolverColisaoBolaLinha(Bola *bola, Vector2 p1, Vector2 p2)
     bola->velocidade = Vector2Subtract(bola->velocidade, reflexao);
     bola->velocidade = Vector2Scale(bola->velocidade, ATRITO);
 }
-
+// Função ao finalizar jogo
 static void DesenharTelaVitoria(int vencedor)
 {
     DrawRectangle(0, 0, LARGURA_TELA, ALTURA_TELA, Fade(BLACK, 0.7f));
@@ -462,9 +456,9 @@ void DesenharJogo(const Game *game)
     }
 }
 
-// game.c
 
-// ... (todo o código que já estava aqui, como AtualizarJogo, DesenharJogo, etc.)
+
+
 
 // Implementação da nova função pública
 void gameGolf()
@@ -482,7 +476,7 @@ void gameGolf()
     CarregarRecursos(&assets);
     InicializarJogo(&game);
 
-    // Loop Principal do Jogo de Golfe
+    // Loop Principal do Jogo de Golf
     while (!WindowShouldClose())
     {
         AtualizarJogo(&game, &assets);
