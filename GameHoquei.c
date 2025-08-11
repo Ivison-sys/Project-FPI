@@ -403,6 +403,10 @@ void desenharJogo(GameState_H *game){
     if(game->contador>0 && game->contador<=3){
         sprintf(game->contregressiva, "%d", game->contador);
         DrawText(game->contregressiva, game->screen_width/2 - MeasureText(game->contregressiva, 150)/2, 3*game->screen_height/4, 150, RAYWHITE);
+        sprintf(game->movejogador1, "USE WASD");
+        DrawText(game->movejogador1, game->screen_width/4 - MeasureText(game->movejogador1, 50)/2, game->screen_height/4, 50, Fade(RAYWHITE, 0.5f));
+        sprintf(game->movejogador2, "USE AS SETAS");
+        DrawText(game->movejogador2, 3*game->screen_width/4 - MeasureText(game->movejogador2, 50)/2, game->screen_height/4, 50, Fade(RAYWHITE, 0.5f));
     }
     if(game->jogador1.gols == 7){
         sprintf(game->vencedor, "%s VENCEU!!!", game->jogador1.nome);

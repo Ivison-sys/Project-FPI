@@ -55,7 +55,7 @@ typedef struct GameState_H{
     int screen_width, screen_height;
     int flagcontador, flagmusica, rodando, terminou, contador, grossuralinha, fps;
     double tempoatual;
-    char tempo[20], placar[6], textfps[10], contregressiva[4], vencedor[20];
+    char tempo[20], placar[6], textfps[10], contregressiva[4], vencedor[20], movejogador1[15], movejogador2[15];
     Color colorbackground, colortext, colormidline, fadecolor;
     Music musicadefundo;
     Sound somcontagem;
