@@ -1,4 +1,3 @@
-// game.h
 #ifndef GAME_H
 #define GAME_H
 
@@ -84,7 +83,7 @@ typedef struct Game {
     Lancador lancadores[CONTAGEM_JOGADORES];
     Vector2 posicoes_iniciais[CONTAGEM_JOGADORES];
     int pontuacoes[CONTAGEM_JOGADORES];
-    int jogador_atual;
+    int jogador_atual; // Mantido para compatibilidade, mas não usado na lógica de turnos
     
     Plataforma plataformas[3]; // NUM_PLATAFORMAS
     int indice_plataforma_atual;
@@ -94,7 +93,7 @@ typedef struct Game {
     Ondulacao ondulacoes[10]; // MAX_ONDULACOES
     Rectangle agua;
 
-    // ADICIONE ESTA LINHA
+    // Array para as nuvens
     Nuvem nuvens[MAX_NUVENS];
 
 } Game;
@@ -109,5 +108,8 @@ void DescarregarRecursos(GameAssets *assets);
 void InicializarJogo(Game *game);
 void AtualizarJogo(Game *game, GameAssets *assets);
 void DesenharJogo(const Game *game); 
-void gameGolf(); 
+
+// A função retorna o número do vencedor (1 ou 2) ou 0 se a janela for fechada.
+int gameGolf(void); 
+
 #endif // GAME_H

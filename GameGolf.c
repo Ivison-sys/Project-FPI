@@ -17,14 +17,16 @@
 #define NUM_PLATAFORMAS 3
 #define VELOCIDADE_ANIMACAO 1.5f
 #define MAX_COLISAO 5
-#define MAX_NUVENS 10
+// MAX_NUVENS já está no .h
+
+// Variáveis estáticas
 static Texture2D cenarioGrama;
 
 // Cores
 static const Color COR_FUNDO = {129, 204, 184, 255};
 static const Color COR_JOGADOR1 = {0, 121, 241, 255};
 static const Color COR_JOGADOR2 = {230, 41, 55, 255};
-Color Marrom = {114, 54, 0, 255};
+static const Color Marrom = {114, 54, 0, 255};
 
 
 // Controles
@@ -38,10 +40,10 @@ static void InicializarNuvens(Game *game)
 {
     for (int i = 0; i < MAX_NUVENS; i++)
     {
-        game->nuvens[i].posicao.x = GetRandomValue(-LARGURA_TELA, LARGURA_TELA); // Começam em posições variadas, algumas fora da tela
+        game->nuvens[i].posicao.x = GetRandomValue(-LARGURA_TELA, LARGURA_TELA);
         game->nuvens[i].posicao.y = GetRandomValue(20, 150);
         game->nuvens[i].raio = GetRandomValue(15, 40);
-        game->nuvens[i].velocidade = GetRandomValue(20, 50); // Velocidades diferentes para um efeito de profundidade
+        game->nuvens[i].velocidade = GetRandomValue(20, 50);
     }
 }
 
@@ -50,15 +52,11 @@ static void AtualizarNuvens(Game *game)
     float delta = GetFrameTime();
     for (int i = 0; i < MAX_NUVENS; i++)
     {
-        // Move a nuvem para a esquerda
         game->nuvens[i].posicao.x -= game->nuvens[i].velocidade * delta;
 
-        // Se a nuvem saiu completamente da tela pela esquerda, a reposiciona na direita
-        // A checagem de "raio * 4" garante que a nuvem (composta por vários círculos) suma por completo
         if (game->nuvens[i].posicao.x < -game->nuvens[i].raio * 4)
         {
             game->nuvens[i].posicao.x = LARGURA_TELA + game->nuvens[i].raio;
-            // Opcional: dar uma nova altura e velocidade para maior variedade
             game->nuvens[i].posicao.y = GetRandomValue(20, 150);
             game->nuvens[i].velocidade = GetRandomValue(20, 50);
         }
@@ -69,13 +67,15 @@ static void DesenharNuvens(const Game *game)
 {
     for (int i = 0; i < MAX_NUVENS; i++)
     {
-        // Desenha uma nuvem simples e estilizada com 3 círculos semi-transparentes
         DrawCircle(game->nuvens[i].posicao.x, game->nuvens[i].posicao.y, game->nuvens[i].raio, Fade(WHITE, 0.9f));
         DrawCircle(game->nuvens[i].posicao.x + game->nuvens[i].raio, game->nuvens[i].posicao.y + 5, game->nuvens[i].raio * 0.8f, Fade(WHITE, 0.8f));
         DrawCircle(game->nuvens[i].posicao.x - game->nuvens[i].raio, game->nuvens[i].posicao.y + 2, game->nuvens[i].raio * 0.7f, Fade(WHITE, 0.8f));
-        
     }
 }
+
+//----------------------------------------------------------------------------------
+// FUNÇÕES PRINCIPAIS DO JOGO (estáticas)
+//----------------------------------------------------------------------------------
 
 static void CarregarPlataformas(Plataforma plataformas[NUM_PLATAFORMAS])
 {
@@ -108,7 +108,7 @@ static void CarregarPlataformas(Plataforma plataformas[NUM_PLATAFORMAS])
     plataformas[2].area_buraco = (Rectangle){ centro_x_plat - 10, 0, 20, 20 };
     plataformas[2].deslocamento_y = ALTURA_TELA + 150;
 }
-// Função para reniciar o jogo
+
 static void ReiniciarJogo(Game *game)
 {
     for (int i = 0; i < CONTAGEM_JOGADORES; i++) {
@@ -116,11 +116,10 @@ static void ReiniciarJogo(Game *game)
         game->lancadores[i] = (Lancador){0, 0, 1, 1, NAO_MIRANDO};
         game->pontuacoes[i] = 0;
     }
-    game->jogador_atual = 0; // preserva para compatibilidade, mas não usado para jogabilidade simultânea
+    game->jogador_atual = 0;
     game->estadoAtual = JOGANDO_G;
     game->vencedor = -1;
     
-    // Resetar posições das plataformas se necessário
     CarregarPlataformas(game->plataformas);
     game->indice_plataforma_atual = 0;
     game->plataforma_esta_animando = false;
@@ -143,7 +142,7 @@ static void ResolverColisaoBolaLinha(Bola *bola, Vector2 p1, Vector2 p2)
     bola->velocidade = Vector2Subtract(bola->velocidade, reflexao);
     bola->velocidade = Vector2Scale(bola->velocidade, ATRITO);
 }
-// Função ao finalizar jogo
+
 static void DesenharTelaVitoria(int vencedor)
 {
     DrawRectangle(0, 0, LARGURA_TELA, ALTURA_TELA, Fade(BLACK, 0.7f));
@@ -166,7 +165,6 @@ void CarregarRecursos(GameAssets *assets)
     assets->som_ponto = LoadSound("Golf/sons/queda_buraco.wav");
     assets->som_agua = LoadSound("Golf/sons/water.wav");
     cenarioGrama = LoadTexture("Golf/piso_gramado.png");
-    
 }
 
 void DescarregarRecursos(GameAssets *assets)
@@ -183,14 +181,13 @@ void InicializarJogo(Game *game)
     game->posicoes_iniciais[1] = (Vector2){ LARGURA_TELA - 195.0f, (ALTURA_TELA / 2.0f)-5 };
     
     game->agua = (Rectangle){ 200, ALTURA_TELA / 2.0f + 200, LARGURA_TELA - 400, ALTURA_TELA/2 };
-    // Inicialização das nuvens.
+    
     InicializarNuvens(game); 
-    ReiniciarJogo(game); // ReiniciarJogo contém a lógica para setar o estado inicial
+    ReiniciarJogo(game);
 }
 
 void AtualizarJogo(Game *game, GameAssets *assets)
 {
-    // Função para atualizar nuvens.
     AtualizarNuvens(game);
 
     float bola_parada = 3.0;
@@ -198,7 +195,6 @@ void AtualizarJogo(Game *game, GameAssets *assets)
     {
         float delta = GetFrameTime();
         
-        // --- Animação da Plataforma ---
         if (game->plataforma_esta_animando) {
             game->progresso_animacao_plataforma += VELOCIDADE_ANIMACAO * delta;
             float y_na_tela = ALTURA_TELA / 2.0f;
@@ -215,7 +211,6 @@ void AtualizarJogo(Game *game, GameAssets *assets)
             }
         }
         
-        // --- Lógica PARA TODOS OS JOGADORES (simultâneo) ---
         Plataforma *plataforma_ativa = &game->plataformas[game->indice_plataforma_atual];
 
         for (int pj = 0; pj < CONTAGEM_JOGADORES; pj++) {
@@ -269,8 +264,7 @@ void AtualizarJogo(Game *game, GameAssets *assets)
                         }
                         break;
                 }
-            } else { // Bola foi lançada
-                // --- Física e Colisão ---
+            } else { 
                 bola->posicao_anterior = bola->posicao;
                 bola->velocidade.y += GRAVIDADE * delta;
                 bola->posicao.x += bola->velocidade.x * 1.8f * delta;
@@ -300,7 +294,6 @@ void AtualizarJogo(Game *game, GameAssets *assets)
                     }
                 }
 
-                // --- Reset e Pontuação ---
                 bool resetar_bola = false;
                 Rectangle gatilho_buraco = plataforma_ativa->area_buraco;
                 gatilho_buraco.y += plataforma_ativa->deslocamento_y;
@@ -333,12 +326,10 @@ void AtualizarJogo(Game *game, GameAssets *assets)
                     bola->lancada = false;
                     bola->posicao = game->posicoes_iniciais[pj];
                     bola->velocidade = (Vector2){0, 0};
-                    // NÃO TROCA DE JOGADOR: modo simultâneo
                 }
             }
         }
         
-        // --- Ondulações da água ---
         for (int i = 0; i < MAX_ONDULACOES; i++) {
             if (game->ondulacoes[i].ativa) {
                 game->ondulacoes[i].raio += 100 * delta; game->ondulacoes[i].alpha -= 0.5f * delta;
@@ -358,23 +349,15 @@ void AtualizarJogo(Game *game, GameAssets *assets)
 void DesenharJogo(const Game *game)
 {
     ClearBackground(COR_FUNDO);
-
-    // ADICIONE ESTA LINHA AQUI
     DesenharNuvens(game);
     
-    
-    
-    // Cenário
     DrawRectangle(0, ALTURA_TELA / 2, 200, ALTURA_TELA / 2, Marrom);
     DrawRectangle(LARGURA_TELA - 200, ALTURA_TELA / 2, 200, ALTURA_TELA / 2, Marrom);
     DrawRectangleRec(game->agua, (Color){0, 100, 255, 180});
 
-    //tentando fazer um gramado
-    DrawTexture(cenarioGrama, LARGURA_TELA -200, 470, WHITE);
+    DrawTexture(cenarioGrama, LARGURA_TELA - 200, 470, WHITE);
     DrawTexture(cenarioGrama, 0, 470, WHITE);
     
-    
-    // Plataformas
     for (int idx_p = 0; idx_p < NUM_PLATAFORMAS; idx_p++) {
         const Plataforma *p = &game->plataformas[idx_p];
         if (p->deslocamento_y > ALTURA_TELA/2 - 150 && p->deslocamento_y < ALTURA_TELA + 150) {
@@ -395,13 +378,11 @@ void DesenharJogo(const Game *game)
         }
     }
 
-    // Efeitos e Jogadores
     for (int i = 0; i < MAX_ONDULACOES; i++) {
         if (game->ondulacoes[i].ativa) DrawCircleLines(game->ondulacoes[i].centro.x, game->ondulacoes[i].centro.y, game->ondulacoes[i].raio, Fade((Color){0,120,255,255}, game->ondulacoes[i].alpha));
     }
     for (int i = 0; i < CONTAGEM_JOGADORES; i++) DrawCircleV(game->jogadores[i].posicao, game->jogadores[i].raio, game->jogadores[i].cor);
 
-    // A Mira e Lançamento simultânea para ambos jogadores
     for (int i = 0; i < CONTAGEM_JOGADORES; i++) {
         const Lancador *l = &game->lancadores[i];
         const Bola *b = &game->jogadores[i];
@@ -411,27 +392,18 @@ void DesenharJogo(const Game *game)
             DrawLineEx(b->posicao, ponto_final, 3.0f, (i==0) ? COR_JOGADOR1 : COR_JOGADOR2);
             
             if (l->estado == AJUSTANDO_POTENCIA) {
-                // Será criada barras para ambos jogadores/ ainda preciso colocar uma das barras mais para lado
-                int largura = (int)(l->potencia * 2.0f);
-                DrawRectangle(10+i*1400, 80 + i, 200, 20, LIGHTGRAY);
-                if (i == 1) {
-                    // Começa no lado direito e vai preenchendo para a esquerda
-                    DrawRectangle(10 + i*1600-largura, 80 + i, largura, 20, RED);
-                } else {
-                    // Preenche normalmente da esquerda para a direita
-                    DrawRectangle(10 + i, 80 + i, largura, 20, RED);
-                }
-                DrawRectangleLines(10+i*1400, 80 + i, 200, 20, DARKGRAY);
+                float barraX = (i == 0) ? 10.0f : LARGURA_TELA - 210.0f; // Posição X da barra
+                DrawRectangle(barraX, 80, 200, 20, LIGHTGRAY);
+                DrawRectangle(barraX, 80, (int)(l->potencia * 2.0f), 20, RED);
+                DrawRectangleLines(barraX, 80, 200, 20, DARKGRAY);
             }
         }
     }
     
-    // HUD (Interface)
     char texto_pontuacao[64];
-    sprintf(texto_pontuacao, "JOGADOR 1: %d | JOGADOR 2: %d", game->pontuacoes[0], game->pontuacoes[1]);
+    sprintf(texto_pontuacao, "DUDU: %d | LÉO: %d", game->pontuacoes[0], game->pontuacoes[1]);
     DrawText(texto_pontuacao, LARGURA_TELA / 2 - MeasureText(texto_pontuacao, 30) / 2, 10, 30, BLACK);
     
-    // Instrucao por jogador (mostra o estado atual de cada um)
     for (int i = 0; i < CONTAGEM_JOGADORES; i++) {
         const Lancador *l = &game->lancadores[i];
         const char *instrucao = "";
@@ -442,41 +414,32 @@ void DesenharJogo(const Game *game)
         }
         char linha[128];
         sprintf(linha, "Jogador %d ('%c'): %s", i+1, (i==0)?'A':'L', instrucao);
-        // desenha à esquerda e direita
         if (i == 0) DrawText(linha, 10, 40, 20, DARKGRAY);
         else DrawText(linha, LARGURA_TELA - MeasureText(linha,20) - 10, 40, 20, DARKGRAY);
     }
     
-    // Destaque de cor sobre o placar (apenas visual, não indica "vez")
     DrawRectangle(LARGURA_TELA / 2 - MeasureText(texto_pontuacao, 30) / 2 - 10, 8, MeasureText("JOGADOR 1: 0", 30) + 15, 34, Fade(COR_JOGADOR1, 0.15f));
-    DrawRectangle(LARGURA_TELA / 2 + 5, 8, MeasureText("JOGADOR 2: 0", 30) + 15, 34, Fade(COR_JOGADOR2, 0.15f));
+    DrawRectangle(LARGURA_TELA / 2 + MeasureText("JOGADOR 1: 0 | ", 30) - 15, 8, MeasureText("JOGADOR 2: 0", 30) + 15, 34, Fade(COR_JOGADOR2, 0.15f));
     
     if (game->estadoAtual == FIM_DE_JOGO) {
         DesenharTelaVitoria(game->vencedor);
     }
 }
 
-
-
-
-
-// Implementação da nova função pública
-void gameGolf()
+// --- Implementação da função pública ---
+// A assinatura foi alterada para `int gameGolf(void)`
+int gameGolf(void)
 {
-    // Inicialização da Janela e Áudio
     InitWindow(LARGURA_TELA, ALTURA_TELA, "Jogo de Golfe");
     InitAudioDevice();
     SetTargetFPS(90);
 
-    // Cria as estruturas para o estado e recursos do jogo
     Game game = {0};
     GameAssets assets = {0};
 
-    // Carrega os recursos e inicializa o estado do jogo
     CarregarRecursos(&assets);
     InicializarJogo(&game);
 
-    // Loop Principal do Jogo de Golf
     while (!WindowShouldClose())
     {
         AtualizarJogo(&game, &assets);
@@ -484,10 +447,22 @@ void gameGolf()
         BeginDrawing();
             DesenharJogo(&game);
         EndDrawing();
+        
+        // Verifica se o jogo terminou e se há um vencedor
+        if (game.estadoAtual == FIM_DE_JOGO && game.vencedor != -1)
+        {
+
+            DescarregarRecursos(&assets);
+            CloseAudioDevice();
+            CloseWindow();
+            return game.vencedor + 1;
+        }
     }
 
-    // Descarregamento e Finalização
+    // Se o loop terminar porque a janela foi fechada, limpa tudo e retorna 0
     DescarregarRecursos(&assets);
     CloseAudioDevice();
     CloseWindow();
+    
+    return 0;
 }
