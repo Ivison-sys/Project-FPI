@@ -328,7 +328,7 @@ void DesenharJogo(const Game *game)
             DrawRectangleRec(buraco_para_desenhar, Fade(BLACK, 0.6f));
         }
     }
-
+    //vai corinthians
     // Efeitos e Jogadores
     for (int i = 0; i < MAX_ONDULACOES; i++) {
         if (game->ondulacoes[i].ativa) DrawCircleLines(game->ondulacoes[i].centro.x, game->ondulacoes[i].centro.y, game->ondulacoes[i].raio, Fade((Color){0,120,255,255}, game->ondulacoes[i].alpha));
