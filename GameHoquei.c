@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include "Hoquei/gameHoquei.h"
 
-void gameHoquei(){
+int gameHoquei(){
     InitWindow(1280, 720, "Air Hockey");
     InitAudioDevice();
     SetTargetFPS(60);
@@ -29,6 +29,12 @@ void gameHoquei(){
     }
     CloseAudioDevice();
     CloseWindow();
+    if(game.jogador1.gols==7){
+        return 1;
+    }
+    else{
+        return 2;
+    }
 }
 
 void iniciarJogo(GameState_H *game){

@@ -80,6 +80,6 @@ void desenharJogo (GameState_H *game);
 
 void animacaoFinal (GameState_H *game);
 
-void gameHoquei();
+int gameHoquei();
 
 #endif
