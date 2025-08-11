@@ -1,4 +1,3 @@
-// game.h
 #ifndef GAME_H
 #define GAME_H
 
@@ -72,13 +71,13 @@ typedef struct GameAssets {
 typedef struct Game {
     GameState estadoAtual;
     int vencedor;
-    
+
     Bola jogadores[CONTAGEM_JOGADORES];
     Lancador lancadores[CONTAGEM_JOGADORES];
     Vector2 posicoes_iniciais[CONTAGEM_JOGADORES];
     int pontuacoes[CONTAGEM_JOGADORES];
     int jogador_atual;
-    
+
     Plataforma plataformas[3]; // NUM_PLATAFORMAS
     int indice_plataforma_atual;
     bool plataforma_esta_animando;
@@ -98,6 +97,9 @@ void DescarregarRecursos(GameAssets *assets);
 
 void InicializarJogo(Game *game);
 void AtualizarJogo(Game *game, GameAssets *assets);
-void DesenharJogo(const Game *game); // 'const' pois o desenho não deve alterar o estado
-void gameGolf(); 
+void DesenharJogo(const Game *game); 
+
+// A função não precisa receber o estado do jogo, pois ela o gerencia internamente.
+int gameGolf(void); 
+
 #endif // GAME_H

@@ -1,4 +1,3 @@
-// golf.c
 #include "Golf/gameGolf.h"
 #include <raymath.h>
 #include <stdio.h>
@@ -18,7 +17,6 @@
 #define MAX_ONDULACOES 10
 #define NUM_PLATAFORMAS 3
 #define VELOCIDADE_ANIMACAO 1.5f
-#define MAX_COLISAO 5
 #define MAX_COLISAO 5
 
 // Cores
@@ -354,7 +352,7 @@ void DesenharJogo(const Game *game)
     
     // HUD (Interface)
     char texto_pontuacao[64];
-    sprintf(texto_pontuacao, "JOGADOR 1: %d | JOGADOR 2: %d", game->pontuacoes[0], game->pontuacoes[1]);
+    sprintf(texto_pontuacao, "DUDU: %d | lÉO: %d", game->pontuacoes[0], game->pontuacoes[1]);
     DrawText(texto_pontuacao, LARGURA_TELA / 2 - MeasureText(texto_pontuacao, 30) / 2, 10, 30, BLACK);
     
     char texto_vez_jogador[128];
@@ -377,12 +375,10 @@ void DesenharJogo(const Game *game)
         DesenharTelaVitoria(game->vencedor);
     }
 }
-// game.c
 
-// ... (todo o código que já estava aqui, como AtualizarJogo, DesenharJogo, etc.)
-
-// Implementação da nova função pública
-void gameGolf()
+// --- Implementação da função pública ---
+// A assinatura foi alterada para `int gameGolf(void)`
+int gameGolf(void)
 {
     // Inicialização da Janela e Áudio
     InitWindow(LARGURA_TELA, ALTURA_TELA, "Jogo de Golfe");
@@ -405,10 +401,30 @@ void gameGolf()
         BeginDrawing();
             DesenharJogo(&game);
         EndDrawing();
+        
+        // Verifica se o jogo terminou e há um vencedor
+        if (game.estadoAtual == FIM_DE_JOGO && game.vencedor != -1)
+        {
+            // Aguarda um pouco antes de fechar para o jogador ver a tela de vitória
+            WaitTime(2.0); // Espera 2 segundos
+            
+            // O valor retornado será 1 ou 2
+            int vencedor = game.vencedor + 1;
+
+            // Descarrega recursos e fecha a janela antes de retornar
+            DescarregarRecursos(&assets);
+            CloseAudioDevice();
+            CloseWindow();
+            
+            return vencedor;
+        }
     }
 
-    // Descarregamento e Finalização
+    // Descarregamento e Finalização caso a janela seja fechada pelo usuário
     DescarregarRecursos(&assets);
     CloseAudioDevice();
     CloseWindow();
+    
+    // Retorna 0 ou outro valor para indicar que o jogo não terminou com um vencedor (ex: janela fechada)
+    return 0; 
 }
