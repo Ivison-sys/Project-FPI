@@ -11,7 +11,6 @@ typedef enum GameScreen {
     TELA_SAIR
 } GameScreen;
 
-
-void menu();
+int menu();
 
 #endif // MENU_H

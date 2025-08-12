@@ -26,7 +26,7 @@ void sorteia_ordem_ids(int ordem[3]){
     ordem[0] = base[0]; ordem[1] = base[1]; ordem[2] = base[2];
 }
 
-void sorteia_ordem_funcoes(void (*ordem[3])(void)){
+void sorteia_ordem_funcoes(int (*ordem[3])(void)){
     int ids[3]; sorteia_ordem_ids(ids);
     for(int i = 0; i < 3; ++i){
         ordem[i] = (ids[i] == JOGO_GOLF)   ? gameGolf
@@ -35,7 +35,8 @@ void sorteia_ordem_funcoes(void (*ordem[3])(void)){
     }
 }
 
-void tela_sorteio_preview(const int ordem[3]){
+void tela_sorteio_preview(int ordem[3]){
+    sorteia_ordem_ids(ordem);
     const int LARGURA = 960, ALTURA = 540;
     InitWindow(LARGURA, ALTURA, "Sorteio dos Minijogos");
 

@@ -1,7 +1,9 @@
 #include "Lib/raylib.h"
 #include "Menu/gameMenu.h"
+#include "Sorteio/sorteio.h"
+#include "Mensagens/mensagens.h"
 
-void menu(){
+int menu(){
     //----------------------------------------------------------------------------------
     // Inicialização
     //----------------------------------------------------------------------------------
@@ -166,9 +168,11 @@ void menu(){
             } break;
 
             case TELA_JOGO: {
-                ClearBackground(BLACK);
-                DrawText("O JOGO COMECOU!", (int)(screenWidth / 2 - MeasureText("O JOGO COMECOU!", 40) / 2), screenHeight / 2 - 20, 40, RAYWHITE);
-                DrawText("Pressione [Esc] para voltar ao menu", (int)(screenWidth / 2 - MeasureText("Pressione [Esc] para voltar ao menu", 20) / 2), screenHeight/2 + 40, 20, WHITE);
+                EndDrawing();
+                UnloadMusicStream(narracao); 
+                CloseAudioDevice();
+                CloseWindow();
+                return 1;
             } break;
 
             default: break;
@@ -183,4 +187,5 @@ void menu(){
      UnloadMusicStream(narracao); 
      CloseAudioDevice();
      CloseWindow();
+     return 0;
 }

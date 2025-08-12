@@ -5,8 +5,8 @@
 #include <stdbool.h>
 
 // Configurações do Jogo
-#define TELA_LARGURA 800
-#define TELA_ALTURA 600
+#define TELA_LARGURA 900
+#define TELA_ALTURA 700
 #define TOTAL_CARTAS 50
 #define TAMANHO_CARTA 60
 #define ESPACAMENTO_CARTA 6

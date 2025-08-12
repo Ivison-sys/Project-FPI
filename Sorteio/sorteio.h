@@ -11,9 +11,9 @@ typedef enum {
 } JogoId;
 
 // funções dos minijogos (trocar nomes se no seu projeto forem diferentes)
-void gameGolf(void);
-void gameHoquei(void);
-void gameMemoria(void);
+int gameGolf(void);
+int gameHoquei(void);
+int gameMemoria(void);
 
 // embaralha um vetor de inteiros mudando a ordem dos elementos aleatoriamente
 void embaralhar_ints(int *v, size_t n);
@@ -22,9 +22,9 @@ void embaralhar_ints(int *v, size_t n);
 void sorteia_ordem_ids(int ordem[3]);
 
 // sorteia uma ordem mas já retorna ponteiros pras funções dos jogos
-void sorteia_ordem_funcoes(void (*ordem[3])(void));
+void sorteia_ordem_funcoes(int (*ordem[3])(void));
 
 // mostra uma telinha animada indicando a ordem sorteada (pra usar os prints aqui)
-void tela_sorteio_preview(const int ordem[3]);
+void tela_sorteio_preview(int ordem[3]);
 
 #endif

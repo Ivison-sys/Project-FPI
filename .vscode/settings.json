@@ -59,6 +59,7 @@
   "files.associations": {
     "gamegolf.h": "c",
     "raylib.h": "c",
-    "raymath.h": "c"
+    "raymath.h": "c",
+    "gamehoquei.h": "c"
   }
 }
