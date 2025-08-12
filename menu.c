@@ -13,9 +13,8 @@ int menu(){
     InitWindow(screenWidth, screenHeight, "Meu Jogo de Aventura");
     InitAudioDevice();
 
-    Music narracao = LoadMusicStream("Menu/sons/narracao.mp3"); 
+    Sound narracao = LoadSound("Menu/sons/narracao.mp3"); 
     bool narracaoIniciada = false;
-
     GameScreen currentScreen = TELA_HISTORIA;
     
     // --- ALTERADO: Apenas a variável de animação dos créditos é necessária ---
@@ -24,21 +23,21 @@ int menu(){
     // --- Variáveis da Tela de História ---
     const char *historia[] = {
         "Dois amigos, Léo e Dudu, voltavam para casa depois da escola, quando, no meio do caminho, algo brilhou no chão. ",
-        "Era uma nota de 50 reais, novinha, reluzente, quase mágica. Os dois se entreolharam. Quem viu primeiro? Quem devia ficar com ela?",
+        "Era uma nota de 50 reais, novinha, reluzente, quase mágica. Os dois se entreolharam. Quem viu primeiro ? Quem devia ficar com ela ?",
         "",
-        "— Vamos dividir? — disse Léo, tentando parecer justo.",
-        "-Dividir? Eu que vi primeiro! — rebateu Dudu, fechando o punho.",
+        "-Vamos dividir — disse Léo, tentando parecer justo.",
+        "-Dividir ? Eu que vi primeiro! - Rebateu Dudu, fechando o punho.",
         "",
-        "Mas nenhum dos dois queria ceder. E foi então que surgiu a ideia brilhante — ou completamente maluca:",
+        "Mas nenhum dos dois queria ceder. E foi então que surgiu a ideia brilhante — ou completamente maluca.",
         "",
-        "— Vamos resolver isso como adultos civilizados... em um duelo de minigames!",
+        "-Vamos resolver isso como adultos civilizados... em um duelo de minigames!",
         "",
         "Três desafios foram propostos. Quem vencesse dois dos três jogos, ficaria com toda a nota.",
-        " O outro? Faria o perdedor pagar um sorvete no caminho de volta — com o próprio dinheiro!"
+        " O outro ? Faria o perdedor pagar um sorvete no caminho de volta  - Com o próprio dinheiro!"
     };
     int numLinhasHistoria = sizeof(historia) / sizeof(historia[0]);
     float scrollY = screenHeight;
-    float velocidadeScroll = 30.0f;
+    float velocidadeScroll = 25.0f;
     int fontSizeHistoria = 20;
     int espacamentoLinhas = 30;
 
@@ -77,20 +76,27 @@ int menu(){
     while (!WindowShouldClose() && currentScreen != TELA_SAIR) {
         //----------------------------------------------------------------------------------
         // Atualização (Lógica)
-        //----------------------------------------------------------------------------------
-        UpdateMusicStream(narracao);
-        switch (currentScreen) {
-            case TELA_HISTORIA: {
-                if (!narracaoIniciada){
-                    PlayMusicStream(narracao);
-                    narracaoIniciada = true;
+       
+    
+    switch (currentScreen) {
+        case TELA_HISTORIA: {
+            // Inicia a narração apenas uma vez
+            if (!narracaoIniciada) {
+                PlaySound(narracao);
+                narracaoIniciada = true;
+            }
+
+       
+            
+            // Lógica de scroll e pulo
+            scrollY -= velocidadeScroll * GetFrameTime();
+            if (scrollY < -(numLinhasHistoria * espacamentoLinhas) || IsKeyPressed(KEY_ENTER) || IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+                if (narracaoIniciada) {
+                    StopSound(narracao);
                 }
-                scrollY -= velocidadeScroll * GetFrameTime();
-                if (scrollY < - (numLinhasHistoria * espacamentoLinhas) || IsKeyPressed(KEY_ENTER) || IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-                    StopMusicStream(narracao);
-                    currentScreen = TELA_MENU;
-                } 
-            } break;
+                currentScreen = TELA_MENU;
+            }
+        } break;
 
             case TELA_MENU: {
                 // --- ALTERADO: Lógica estática original, sem animação ---
@@ -169,7 +175,7 @@ int menu(){
 
             case TELA_JOGO: {
                 EndDrawing();
-                UnloadMusicStream(narracao); 
+                UnloadSound(narracao); 
                 CloseAudioDevice();
                 CloseWindow();
                 return 1;
@@ -178,13 +184,14 @@ int menu(){
             default: break;
         }
 
-        EndDrawing();
+        EndDrawing();   
+
     }
 
     //----------------------------------------------------------------------------------
     // Finalização
     //----------------------------------------------------------------------------------
-     UnloadMusicStream(narracao); 
+     UnloadSound(narracao); 
      CloseAudioDevice();
      CloseWindow();
      return 0;
