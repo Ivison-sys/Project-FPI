@@ -64,7 +64,6 @@ void tela_sorteio_preview(int ordem[3]){
         BeginDrawing();
         ClearBackground(RAYWHITE);
         DrawText("ORDEM SORTEADA", 20, 20, 28, DARKGRAY);
-        DrawText("coloca oz print no assets/ e descomenta no codigo.", 20, 54, 16, GRAY);
 
         int w = LARGURA - 80, h = ALTURA - 140;
         int slotW = w/3 - 10, x0 = 40, y0 = 100;
