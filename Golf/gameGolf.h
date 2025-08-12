@@ -10,10 +10,17 @@
 #define ALTURA_TELA 940
 #define CONTAGEM_JOGADORES 2
 #define PONTUACAO_PARA_VENCER 5
+#define MAX_NUVENS 10
 
 //----------------------------------------------------------------------------------
 // ESTRUTURAS DE DADOS
 //----------------------------------------------------------------------------------
+
+typedef struct Nuvem {
+    Vector2 posicao;
+    float raio;
+    float velocidade;
+} Nuvem;
 
 typedef enum GameState_G {
     JOGANDO_G,
@@ -76,8 +83,8 @@ typedef struct Game {
     Lancador lancadores[CONTAGEM_JOGADORES];
     Vector2 posicoes_iniciais[CONTAGEM_JOGADORES];
     int pontuacoes[CONTAGEM_JOGADORES];
-    int jogador_atual;
-
+    int jogador_atual; // Mantido para compatibilidade, mas não usado na lógica de turnos
+    
     Plataforma plataformas[3]; // NUM_PLATAFORMAS
     int indice_plataforma_atual;
     bool plataforma_esta_animando;
@@ -85,6 +92,9 @@ typedef struct Game {
 
     Ondulacao ondulacoes[10]; // MAX_ONDULACOES
     Rectangle agua;
+
+    // Array para as nuvens
+    Nuvem nuvens[MAX_NUVENS];
 
 } Game;
 
@@ -99,7 +109,7 @@ void InicializarJogo(Game *game);
 void AtualizarJogo(Game *game, GameAssets *assets);
 void DesenharJogo(const Game *game); 
 
-// A função não precisa receber o estado do jogo, pois ela o gerencia internamente.
+// A função retorna o número do vencedor (1 ou 2) ou 0 se a janela for fechada.
 int gameGolf(void); 
 
 #endif // GAME_H
