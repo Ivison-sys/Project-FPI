@@ -5,467 +5,495 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#define dim 60
-#define qtdCards 50
-#define margin 6
 
-StateGame estadoAtual = MENU;
+// Constantes Internas
+#define COLUNAS_GRID 10
+#define TRANSPARENCIA_ENCONTRADA 0.7f
+#define TRANSPARENCIA_PAUSE 0.7f
+#define TRANSPARENCIA_BUG 0.8f
+#define LARGURA_BORDA 2
 
-// controle do jogo
-Card* primeira = NULL;
-Card* segunda = NULL;
-bool esperando = false;
-float tempo = 1.0f;
-int pares = 0;
+// Paleta de Cores
+static const Color CARTA_VERSO = {230, 41, 55, 255};
+static const Color COR_CARTA_COMBINADA = LIGHTGRAY;
+static const Color BORDA_CARTA = BLACK;
+static const Color COR_PLAYER1 = BLACK;
+static const Color COR_PLAYER2 = {230, 41, 55, 255};
+static const Color FUNDO_TELA = RAYWHITE;
+static const Color TEXTO_BUG = {230, 41, 55, 255};
+static const Color FUNDO_BUG = DARKGRAY;
 
-// jogadores
-char nomeJogador1[MAX_NOME_JOGADOR] = "Jogador 1";
-char nomeJogador2[MAX_NOME_JOGADOR] = "Jogador 2";
-int pts1 = 0;
-int pts2 = 0;
-int turno = 1;
-
-char input[MAX_NOME_JOGADOR + 1] = "\0";
-int numChars = 0;
-
-// sons
-Sound musicaFundo;
-Sound somOk;
-Sound somFalha;
-Sound somFlip;
-Sound somFim;
-Sound somBug;
-bool tocando = false;
-
-//bug 
-bool bugAtivo = false;
-float bugTempo = 0.0f;
-
-void carregandoSons(){
-    InitAudioDevice();
-    
-    musicaFundo = LoadSound("Memoria/src/music/Fundo.mp3");
-    somOk = LoadSound("Memoria/src/music/Sucesso.mp3");
-    somFalha = LoadSound("Memoria/src/music/Erro.mp3");
-    somFlip = LoadSound("Memoria/src/music/Carta.mp3");
-    somFim = LoadSound("Memoria/src/music/Final_Jogo.mp3");
-    somBug = LoadSound("Memoria/src/music/Bug.mp3");
-}
-
-void liberandoSons(){
-    UnloadSound(musicaFundo);
-    UnloadSound(somOk);
-    UnloadSound(somFalha);
-    UnloadSound(somFlip);
-    UnloadSound(somFim);
-    UnloadSound(somBug);
-    CloseAudioDevice();
-}
-
-void controleSom(){
-    if(!tocando && estadoAtual != VITORIA && !bugAtivo){
-        PlaySound(musicaFundo);
-        tocando = true;
-    }
-    
-    if(tocando && !IsSoundPlaying(musicaFundo) && estadoAtual != VITORIA && !bugAtivo){
-        PlaySound(musicaFundo);
-    }
-    
-    if(tocando && (estadoAtual == VITORIA || bugAtivo)){
-        StopSound(musicaFundo);
-        tocando = false;
-    }
-}
-
-
-
-char** gerandoSeq(){
-    char* nomes[] = {"arduino", "assembly", "c", "cpp", "csharp", "css", "dart", "fortran", "git",
-                    "github", "go", "html", "java", "js", "kotlin", "lua", "php",  "python", "quartus", 
-                    "r", "react", "swift", "ts", "vscode", "arduino", "assembly", "c", "cpp", "csharp", 
-                    "css", "dart", "fortran", "git", "github", "go", "html", "java", "js", "kotlin", 
-                    "lua", "php",  "python", "quartus", "r", "react", "swift", "ts", "vscode"
-                };
-    
-    // Add bugs
-    char* temp[50];
-    for(int i = 0; i < 48; i++){
-        temp[i] = nomes[i];
-    }
-    temp[48] = "Bug";
-    temp[49] = "Bug";
-    
-    char** seq = malloc(50 * sizeof(char*));
-    
-
-    for(int i = 49; i > 0; i--){
-        int j = rand() % (i+1);
-        char* aux = temp[i];
-        temp[i] = temp[j];
-        temp[j] = aux;
-    }
-    
-    for(int i = 0; i < 50; i++){
-        seq[i] = temp[i];
-    }
-
-    return seq;
-}
-
-Card** inicilizandoCards(){
-    Card** cards = (Card**) malloc(qtdCards * sizeof(Card*));
-    int cols = 10;
-    char** seq = gerandoSeq();
-    
-    Vector2 inicio = (Vector2){
-        (GetScreenWidth() - (dim * cols + margin * (cols - 1))) / 2,
-        (GetScreenHeight() - (dim * (qtdCards / cols) + margin * ((qtdCards / cols) - 1))) / 2
+// Geração de Sequência de Cartas
+static char** CriarSequenciaEmbaralhada(void)
+{
+    static char* lista_nomes[] = {
+        "arduino", "assembly", "c", "cpp", "csharp", "css", "dart", "fortran", "git",
+        "github", "go", "html", "java", "js", "kotlin", "lua", "php", "python", "quartus", 
+        "r", "react", "swift", "ts", "vscode", "arduino", "assembly", "c", "cpp", "csharp", 
+        "css", "dart", "fortran", "git", "github", "go", "html", "java", "js", "kotlin", 
+        "lua", "php", "python", "quartus", "r", "react", "swift", "ts", "vscode"
     };
     
-    for(int i = 0; i < qtdCards; i++){
-        int col = i % cols;
-        int row = i / cols;
+    char* buffer_temp[TOTAL_CARTAS];
+    int i;
+    for(i = 0; i < 48; i++) {
+        buffer_temp[i] = lista_nomes[i];
+    }
+    buffer_temp[48] = "Bug";
+    buffer_temp[49] = "Bug";
+    
+    // Embaralhamento
+    for(i = TOTAL_CARTAS - 1; i > 0; i--) {
+        int indice_aleatorio = rand() % (i + 1);
+        char* temporario = buffer_temp[i];
+        buffer_temp[i] = buffer_temp[indice_aleatorio];
+        buffer_temp[indice_aleatorio] = temporario;
+    }
+    
+    char** sequencia_final = malloc(TOTAL_CARTAS * sizeof(char*));
+    for(i = 0; i < TOTAL_CARTAS; i++) {
+        sequencia_final[i] = buffer_temp[i];
+    }
+    
+    return sequencia_final;
+}
+
+// Inicialização das Cartas
+static void ConfigurarCartasJogo(CartaJogo*** cartas_ptr)
+{
+    *cartas_ptr = malloc(TOTAL_CARTAS * sizeof(CartaJogo*));
+    char** sequencia = CriarSequenciaEmbaralhada();
+    
+    Vector2 posicao_inicial = {
+        (TELA_LARGURA - (TAMANHO_CARTA * COLUNAS_GRID + ESPACAMENTO_CARTA * (COLUNAS_GRID - 1))) / 2,
+        (TELA_ALTURA - (TAMANHO_CARTA * (TOTAL_CARTAS / COLUNAS_GRID) + ESPACAMENTO_CARTA * ((TOTAL_CARTAS / COLUNAS_GRID) - 1))) / 2
+    };
+    
+    int idx;
+    for(idx = 0; idx < TOTAL_CARTAS; idx++) {
+        int coluna = idx % COLUNAS_GRID;
+        int linha = idx / COLUNAS_GRID;
         
-        cards[i] = (Card*) malloc(sizeof(Card));
+        (*cartas_ptr)[idx] = malloc(sizeof(CartaJogo));
         
-        char* icon = seq[i];
-        char caminho[250];
+        char caminho_completo[250];
+        snprintf(caminho_completo, sizeof(caminho_completo), "Memoria/src/imgs/%s.png", sequencia[idx]);
         
-        snprintf(caminho, sizeof(caminho), "Memoria/src/imgs/%s.png", icon);
-        Image img = LoadImage(caminho);
-        ImageResize(&img, dim, dim);
-        cards[i]->logo = LoadTextureFromImage(img);
-        UnloadImage(img);
-        cards[i]->nome = strdup(icon);
-        cards[i]->estado = VERSO;
-        cards[i]->bugUsado = false;
-        cards[i]->retangulo = (Rectangle){
-            inicio.x + col * (dim + margin),
-            inicio.y + row * (dim + margin),
-            dim, dim
+        Image img_carregada = LoadImage(caminho_completo);
+        ImageResize(&img_carregada, TAMANHO_CARTA, TAMANHO_CARTA);
+        (*cartas_ptr)[idx]->textura = LoadTextureFromImage(img_carregada);
+        UnloadImage(img_carregada);
+        
+        (*cartas_ptr)[idx]->identificador = strdup(sequencia[idx]);
+        (*cartas_ptr)[idx]->status = CARTA_VIRADA;
+        (*cartas_ptr)[idx]->bug_ativado = false;
+        (*cartas_ptr)[idx]->bounds = (Rectangle){
+            posicao_inicial.x + coluna * (TAMANHO_CARTA + ESPACAMENTO_CARTA),
+            posicao_inicial.y + linha * (TAMANHO_CARTA + ESPACAMENTO_CARTA),
+            TAMANHO_CARTA, TAMANHO_CARTA
         };
     }
     
-    free(seq);
-    return cards;
+    free(sequencia);
 }
 
-void drawCards(Card** cards){
-    for(int i = 0; i < qtdCards; i++){
-        switch (cards[i]->estado){
-            case VERSO:
-            DrawRectangleRec(cards[i]->retangulo, RED);
-            break;
-            
-            case FRENTE:
-            DrawTexture(cards[i]->logo, cards[i]->retangulo.x, cards[i]->retangulo.y, WHITE);
-            break;
-            
-            case ENCONTRADA:
-            DrawRectangleRec(cards[i]->retangulo, LIGHTGRAY);
-            DrawTexture(cards[i]->logo, cards[i]->retangulo.x, cards[i]->retangulo.y, ColorAlpha(WHITE, 0.7f));
-            break;
+//
+
+static void LiberarCartasJogo(CartaJogo** cartas)
+{
+    if (cartas == NULL) return;
+    
+    int i;
+    for(i = 0; i < TOTAL_CARTAS; i++) {
+        if (cartas[i] != NULL) {
+            UnloadTexture(cartas[i]->textura);
+            free(cartas[i]->identificador);
+            free(cartas[i]);
         }
-        DrawRectangleLinesEx(cards[i]->retangulo, 2, BLACK);
     }
+    free(cartas);
 }
 
+//Reset do Jogo
+static void ResetarEstadoJogo(JogoMemoria *jogo)
+{
+    jogo->status = PARTIDA_ATIVA;
+    jogo->turno_atual = 0;
+    jogo->vencedor_final = -1;
+    jogo->combinacoes_feitas = 0;
+    
+    jogo->participantes[0].pontos = 0;
+    jogo->participantes[1].pontos = 0;
+    
+    jogo->comparador.primeira = NULL;
+    jogo->comparador.segunda = NULL;
+    jogo->comparador.processando = false;
+    jogo->comparador.cronometro = DURACAO_COMPARACAO;
+    
+    jogo->bug_system.em_acao = false;
+    jogo->bug_system.timer = 0.0f;
+    
+    if (jogo->conjunto_cartas != NULL) {
+        LiberarCartasJogo(jogo->conjunto_cartas);
+    }
+    ConfigurarCartasJogo(&jogo->conjunto_cartas);
+}
 
-
-Card** buscandoClick(Card** cards){
-    Vector2 mouse = GetMousePosition();
-    for(int i = 0; i < qtdCards; i++){
-        if(CheckCollisionPointRec(mouse, cards[i]->retangulo) && cards[i]->estado == VERSO && !bugAtivo){
-            PlaySound(somFlip);
+// Clique do Mouse
+static void TratarCliqueUsuario(JogoMemoria *jogo)
+{
+    if (jogo->bug_system.em_acao || jogo->comparador.processando) return;
+    
+    Vector2 pos_mouse = GetMousePosition();
+    
+    int i;
+    for(i = 0; i < TOTAL_CARTAS; i++) {
+        CartaJogo *carta_atual = jogo->conjunto_cartas[i];
+        
+        if (CheckCollisionPointRec(pos_mouse, carta_atual->bounds) && carta_atual->status == CARTA_VIRADA) {
+            PlaySound(jogo->gerenciador_audio.som_carta);
             
-            //   se clicou em bug
-            if(strcmp(cards[i]->nome, "Bug") == 0 && !cards[i]->bugUsado){
-                cards[i]->bugUsado = true;
-                cards[i]->estado = ENCONTRADA;
-                bugAtivo = true;
-                bugTempo = 7.0f;
-                PlaySound(somBug);
-                StopSound(musicaFundo);
-                tocando = false;
+            // Tratamento especial para carta Bug
+            if (strcmp(carta_atual->identificador, "Bug") == 0 && !carta_atual->bug_ativado) {
+                carta_atual->bug_ativado = true;
+                carta_atual->status = CARTA_COMBINADA;
+                jogo->bug_system.em_acao = true;
+                jogo->bug_system.timer = DURACAO_EFEITO_BUG;
+                PlaySound(jogo->gerenciador_audio.som_bug);
+                StopSound(jogo->gerenciador_audio.musica_principal);
+                jogo->gerenciador_audio.audio_ativo = false;
                 
-                turno = (turno == 1) ? 2 : 1;
+                jogo->turno_atual = (jogo->turno_atual == 0) ? 1 : 0;
                 
-                if(primeira != NULL) {
-                    primeira->estado = VERSO;
-                    primeira = NULL;
+                if (jogo->comparador.primeira != NULL) {
+                    jogo->comparador.primeira->status = CARTA_VIRADA;
+                    jogo->comparador.primeira = NULL;
                 }
-                if(segunda != NULL) {
-                    segunda->estado = VERSO;
-                    segunda = NULL;
+                if (jogo->comparador.segunda != NULL) {
+                    jogo->comparador.segunda->status = CARTA_VIRADA;
+                    jogo->comparador.segunda = NULL;
                 }
-                esperando = false;
-                break;
+                jogo->comparador.processando = false;
+                return;
             }
             
-            if(primeira == NULL){
-                primeira = cards[i];
-            } else if(segunda == NULL){
-                if(cards[i] == primeira){
-                    cards[i]->estado = VERSO;
-                    primeira = NULL;
-                    continue;
+
+            if (jogo->comparador.primeira == NULL) {
+                jogo->comparador.primeira = carta_atual;
+            } else if (jogo->comparador.segunda == NULL) {
+                if (carta_atual == jogo->comparador.primeira) {
+                    carta_atual->status = CARTA_VIRADA;
+                    jogo->comparador.primeira = NULL;
+                    return;
                 }
-                segunda = cards[i];
-                esperando = true;
-                tempo = 1.0f;
+                jogo->comparador.segunda = carta_atual;
+                jogo->comparador.processando = true;
+                jogo->comparador.cronometro = DURACAO_COMPARACAO;
             }
-            cards[i]->estado = FRENTE;
-            break;
-        }
-    }
-    return cards;
-}
-
-void mostraBug(){
-    if(bugAtivo && bugTempo > 0.0f){
-        float fade = bugTempo / 7.0f; 
-        
-        char* msg = "DEU BUG! você perdeu a vez";
-        int w = MeasureText(msg, 40);
-        int x = GetScreenWidth()/2 - w/2;
-        int y = GetScreenHeight()/2 - 20;
-        
-        DrawRectangle(x - 20, y - 10, w + 40, 60, ColorAlpha(DARKGRAY, fade * 0.8f));
-        DrawText(msg, x, y, 40, ColorAlpha(RED, fade));
-    }
-}
-
-// Estados
-void DrawMenu(){
-    DrawText("JOGO DA MEMÓRIA", GetScreenWidth()/2 - MeasureText("JOGO DA MEMÓRIA", 50)/2, GetScreenHeight()/2 - 100, 50, BLACK);
-    DrawText("Pressione enter para começar!", GetScreenWidth()/2 - MeasureText("Pressione enter para começar!", 20)/2, GetScreenHeight()/2 + 50, 20, RED);
-}
-
-void DrawInputNome(const char* prompt){
-    DrawText(prompt, GetScreenWidth()/2 - MeasureText(prompt, 30)/2, GetScreenHeight()/2 - 80, 30, BLACK);
-    
-    DrawRectangle(GetScreenWidth()/2 - 150, GetScreenHeight()/2 - 20, 300, 40, LIGHTGRAY);
-    DrawRectangleLines(GetScreenWidth()/2 - 150, GetScreenHeight()/2 - 20, 300, 40, DARKGRAY);
-    
-    Color cor = (estadoAtual == PEDINDO_NOME_J1) ? BLACK : RED;
-    DrawText(input, GetScreenWidth()/2 - 140, GetScreenHeight()/2 - 10, 20, cor);
-    
-    if(((int)(GetTime() * 2)) % 2 == 0) DrawText("_", GetScreenWidth()/2 - 140 + MeasureText(input, 20), GetScreenHeight()/2 - 10, 20, cor);
-    
-    DrawText("Pressione enter para confirmar", GetScreenWidth()/2 - MeasureText("Pressione enter para confirmar", 20)/2, GetScreenHeight()/2 + 60, 20, BLACK);
-}
-
-void processaTexto(char* dest, int max, StateGame proximo){
-    int key = GetCharPressed();
-    while(key > 0){
-        if((key >= 32) && (key <= 125) && (numChars < max)){
-            input[numChars] = (char)key;
-            numChars++;
-            input[numChars] = '\0';
-        }
-        key = GetCharPressed();
-    }
-    
-    if(IsKeyPressed(KEY_BACKSPACE)){
-        if(numChars > 0){
-            numChars--;
-            input[numChars] = '\0';
-        }
-    }
-    
-    if(IsKeyPressed(KEY_ENTER)){
-        if(numChars > 0){
-            strcpy(dest, input);
-            numChars = 0;
-            input[0] = '\0';
-            estadoAtual = proximo;
+            carta_atual->status = CARTA_REVELADA;
+            return;
         }
     }
 }
 
-void DrawPausado(Card** cards){
-    drawCards(cards);
-    DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), ColorAlpha(WHITE, 0.7f));
-    
-    char* txt = "O jogo está pausado, pressione enter para retorna!";
-    int w = MeasureText(txt, 20);
-    int x = GetScreenWidth()/2 - w/2;
-    int y = GetScreenHeight()/2 - 10;
-    
-    DrawRectangle(x - 10, y - 5, w + 20, 30, ColorAlpha(WHITE, 0.8f));
-    DrawText(txt, x, y, 20, BLACK);
-}
 
-Card** drawJogando(Card** cards){
-    drawCards(cards);
+// Sistema de Comparação de Cartas
+static void ExecutarComparacaoCartas(JogoMemoria *jogo)
+{
+    if (!jogo->comparador.processando || jogo->bug_system.em_acao) return;
     
-    //bug timer
-    if(bugAtivo){
-        bugTempo -= GetFrameTime();
-        if(bugTempo <= 0.0f){
-            bugAtivo = false;
-            bugTempo = 0.0f;
-        }
-    }
+    jogo->comparador.cronometro -= GetFrameTime();
     
-    // UI
-    DrawText(TextFormat("%s: %d", nomeJogador1, pts1), 10, 10, 20, BLACK);
-    DrawText(TextFormat("%s: %d", nomeJogador2, pts2), GetScreenWidth() - MeasureText(TextFormat("%s: %d", nomeJogador2, pts2), 20) - 10, 10, 20, RED);
-    DrawText(TextFormat("Turno: %s", (turno == 1) ? nomeJogador1 : nomeJogador2), GetScreenWidth()/2 - MeasureText(TextFormat("Turno: %s", (turno == 1) ? nomeJogador1 : nomeJogador2), 25)/2, 10, 25, BLACK);
-    
-    // logica comparacao
-    if(esperando && !bugAtivo){
-        tempo -= GetFrameTime();
-        
-        if(tempo <= 0.0f){
-            if(primeira != NULL && segunda != NULL){
-                if(strcmp(primeira->nome, segunda->nome) == 0){
-                    primeira->estado = ENCONTRADA;
-                    segunda->estado = ENCONTRADA;
-                    pares++;
-                    PlaySound(somOk);
-                    
-                    if(turno == 1){
-                        pts1++;
-                    } else {
-                        pts2++;
-                    }
-                } else {
-                    primeira->estado = VERSO;
-                    segunda->estado = VERSO;
-                    PlaySound(somFalha);
-                    turno = (turno == 1) ? 2 : 1;
-                }
+    if (jogo->comparador.cronometro <= 0.0f) {
+        if (jogo->comparador.primeira != NULL && jogo->comparador.segunda != NULL) {
+            if (strcmp(jogo->comparador.primeira->identificador, jogo->comparador.segunda->identificador) == 0) {
+                jogo->comparador.primeira->status = CARTA_COMBINADA;
+                jogo->comparador.segunda->status = CARTA_COMBINADA;
+                jogo->combinacoes_feitas++;
+                PlaySound(jogo->gerenciador_audio.som_acerto);
+                
+                jogo->participantes[jogo->turno_atual].pontos++;
+            } else {
+                jogo->comparador.primeira->status = CARTA_VIRADA;
+                jogo->comparador.segunda->status = CARTA_VIRADA;
+                PlaySound(jogo->gerenciador_audio.som_erro);
+                jogo->turno_atual = (jogo->turno_atual == 0) ? 1 : 0;
             }
-            primeira = NULL;
-            segunda = NULL;
-            esperando = false;
         }
-    } else if(!bugAtivo) {
-        if(IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) cards = buscandoClick(cards);
+        
+        jogo->comparador.primeira = NULL;
+        jogo->comparador.segunda = NULL;
+        jogo->comparador.processando = false;
     }
-    
-    mostraBug();
-    
-    if(pares == 24){ 
-        estadoAtual = VITORIA;
-        PlaySound(somFim);
-    }
-    
-    return cards;
 }
 
-void DrawVitoria(){
-    const char* winner;
-    if(pts1 > pts2){
-        winner = nomeJogador1;
-    } else if(pts2 > pts1){
-        winner = nomeJogador2;
+// Sistema do Bug
+static void ProcessarSistemaBug(JogoMemoria *jogo)
+{
+    if (!jogo->bug_system.em_acao) return;
+    
+    jogo->bug_system.timer -= GetFrameTime();
+    if (jogo->bug_system.timer <= 0.0f) {
+        jogo->bug_system.em_acao = false;
+        jogo->bug_system.timer = 0.0f;
+    }
+}
+
+
+//Controle de Áudio
+static void GerenciarAudio(JogoMemoria *jogo)
+{
+    if (!jogo->gerenciador_audio.audio_ativo && jogo->status != PARTIDA_FINALIZADA && !jogo->bug_system.em_acao) {
+        PlaySound(jogo->gerenciador_audio.musica_principal);
+        jogo->gerenciador_audio.audio_ativo = true;
+    }
+    
+    if (jogo->gerenciador_audio.audio_ativo && !IsSoundPlaying(jogo->gerenciador_audio.musica_principal) && 
+        jogo->status != PARTIDA_FINALIZADA && !jogo->bug_system.em_acao) {
+        PlaySound(jogo->gerenciador_audio.musica_principal);
+    }
+    
+    if (jogo->gerenciador_audio.audio_ativo && (jogo->status == PARTIDA_FINALIZADA || jogo->bug_system.em_acao)) {
+        StopSound(jogo->gerenciador_audio.musica_principal);
+        jogo->gerenciador_audio.audio_ativo = false;
+    }
+}
+
+// Renderização das Cartas
+static void RenderizarCartas(const JogoMemoria *jogo)
+{
+    int i;
+    for(i = 0; i < TOTAL_CARTAS; i++) {
+        const CartaJogo *carta = jogo->conjunto_cartas[i];
+        
+        if (carta->status == CARTA_VIRADA) {
+            DrawRectangleRec(carta->bounds, CARTA_VERSO);
+        }
+        else if (carta->status == CARTA_REVELADA) {
+            DrawTexture(carta->textura, carta->bounds.x, carta->bounds.y, WHITE);
+        }
+        else if (carta->status == CARTA_COMBINADA) {
+            DrawRectangleRec(carta->bounds, COR_CARTA_COMBINADA);
+            DrawTexture(carta->textura, carta->bounds.x, carta->bounds.y, ColorAlpha(WHITE, TRANSPARENCIA_ENCONTRADA));
+        }
+        DrawRectangleLinesEx(carta->bounds, LARGURA_BORDA, BORDA_CARTA);
+    }
+}
+
+// Interface de Usuário
+
+static void RenderizarInterface(const JogoMemoria *jogo)
+{
+    char texto_p1[100];
+    char texto_p2[100];
+    snprintf(texto_p1, sizeof(texto_p1), "%s: %d", 
+             jogo->participantes[0].nome, jogo->participantes[0].pontos);
+    snprintf(texto_p2, sizeof(texto_p2), "%s: %d", 
+             jogo->participantes[1].nome, jogo->participantes[1].pontos);
+    
+    DrawText(texto_p1, 10, 10, 20, jogo->participantes[0].cor_display);
+    DrawText(texto_p2, TELA_LARGURA - MeasureText(texto_p2, 20) - 10, 10, 20, jogo->participantes[1].cor_display);
+    
+    char indicador_turno[100];
+    snprintf(indicador_turno, sizeof(indicador_turno), "Turno: %s", jogo->participantes[jogo->turno_atual].nome);
+    DrawText(indicador_turno, TELA_LARGURA/2 - MeasureText(indicador_turno, 25)/2, 10, 25, BLACK);
+}
+
+// Efeito Visual do Bug
+static void RenderizarEfeitoBug(const JogoMemoria *jogo)
+{
+    if (!jogo->bug_system.em_acao || jogo->bug_system.timer <= 0.0f) return;
+    
+    float intensidade = jogo->bug_system.timer / DURACAO_EFEITO_BUG;
+    const char* msg_bug = "DEU BUG! você perdeu a vez";
+    int largura_msg = MeasureText(msg_bug, 40);
+    int pos_x = TELA_LARGURA/2 - largura_msg/2;
+    int pos_y = TELA_ALTURA/2 - 20;
+    
+    DrawRectangle(pos_x - 20, pos_y - 10, largura_msg + 40, 60, ColorAlpha(FUNDO_BUG, intensidade * TRANSPARENCIA_BUG));
+    DrawText(msg_bug, pos_x, pos_y, 40, ColorAlpha(TEXTO_BUG, intensidade));
+}
+
+// Tela de Pausa
+static void RenderizarTelaPausa(const JogoMemoria *jogo)
+{
+    RenderizarCartas(jogo);
+    DrawRectangle(0, 0, TELA_LARGURA, TELA_ALTURA, ColorAlpha(WHITE, TRANSPARENCIA_PAUSE));
+    
+    const char* msg_pausa = "O jogo está pausado, pressione ENTER para retornar!";
+    int largura_msg = MeasureText(msg_pausa, 20);
+    int pos_x = TELA_LARGURA/2 - largura_msg/2;
+    int pos_y = TELA_ALTURA/2 - 10;
+    
+    DrawRectangle(pos_x - 10, pos_y - 5, largura_msg + 20, 30, ColorAlpha(WHITE, TRANSPARENCIA_BUG));
+    DrawText(msg_pausa, pos_x, pos_y, 20, BLACK);
+}
+
+// Tela de Vitória
+static void RenderizarTelaFinal(const JogoMemoria *jogo)
+{
+    const char* resultado;
+    if (jogo->participantes[0].pontos > jogo->participantes[1].pontos) {
+        resultado = jogo->participantes[0].nome;
+    } else if (jogo->participantes[1].pontos > jogo->participantes[0].pontos) {
+        resultado = jogo->participantes[1].nome;
     } else {
-        winner = "Empate!";
+        resultado = "Empate!";
     }
     
-    DrawText("FIM DE JOGO!", GetScreenWidth()/2 - MeasureText("FIM DE JOGO!", 50)/2, GetScreenHeight()/2 - 120, 50, BLACK);
-    DrawText(TextFormat("Vencedor: %s", winner), GetScreenWidth()/2 - MeasureText(TextFormat("Vencedor: %s", winner), 30)/2, GetScreenHeight()/2 - 60, 30, BLACK);
-    DrawText(TextFormat("%s: %d", nomeJogador1, pts1), GetScreenWidth()/2 - MeasureText(TextFormat("%s: %d", nomeJogador1, pts1), 25)/2, GetScreenHeight()/2, 25, BLACK);
-    DrawText(TextFormat("%s: %d", nomeJogador2, pts2), GetScreenWidth()/2 - MeasureText(TextFormat("%s: %d", nomeJogador2, pts2), 25)/2, GetScreenHeight()/2 + 40, 25, RED);
+    DrawText("FIM DE JOGO!", TELA_LARGURA/2 - MeasureText("FIM DE JOGO!", 50)/2, TELA_ALTURA/2 - 120, 50, BLACK);
     
-    DrawText("Pressione 'R' para jogar novamente", GetScreenWidth()/2 - MeasureText("Pressione 'R' para jogar novamente", 20)/2, GetScreenHeight()/2 + 100, 20, BLACK);
+    char msg_resultado[100];
+    snprintf(msg_resultado, sizeof(msg_resultado), "Vencedor: %s", resultado);
+    DrawText(msg_resultado, TELA_LARGURA/2 - MeasureText(msg_resultado, 30)/2, TELA_ALTURA/2 - 60, 30, BLACK);
+    
+    char score1[100], score2[100];
+    snprintf(score1, sizeof(score1), "%s: %d", jogo->participantes[0].nome, jogo->participantes[0].pontos);
+    snprintf(score2, sizeof(score2), "%s: %d", jogo->participantes[1].nome, jogo->participantes[1].pontos);
+    
+    DrawText(score1, TELA_LARGURA/2 - MeasureText(score1, 25)/2, TELA_ALTURA/2, 25, jogo->participantes[0].cor_display);
+    DrawText(score2, TELA_LARGURA/2 - MeasureText(score2, 25)/2, TELA_ALTURA/2 + 40, 25, jogo->participantes[1].cor_display);
+    
+    DrawText("Pressione 'R' para jogar novamente", TELA_LARGURA/2 - MeasureText("Pressione 'R' para jogar novamente", 20)/2, TELA_ALTURA/2 + 100, 20, BLACK);
 }
 
-void gameMemoria(){
-    InitWindow(800, 600, "Jogo da mémoria");
+//audio
+void ConfigurarRecursos(AudioManager *audio)
+{
+    audio->musica_principal = LoadSound("Memoria/src/music/Fundo.mp3");
+    audio->som_acerto = LoadSound("Memoria/src/music/Sucesso.mp3");
+    audio->som_erro = LoadSound("Memoria/src/music/Erro.mp3");
+    audio->som_carta = LoadSound("Memoria/src/music/Carta.mp3");
+    audio->som_termino = LoadSound("Memoria/src/music/Final_Jogo.mp3");
+    audio->som_bug = LoadSound("Memoria/src/music/Bug.mp3");
+    audio->audio_ativo = false;
+}
+
+void LimparRecursos(AudioManager *audio)
+{
+    UnloadSound(audio->musica_principal);
+    UnloadSound(audio->som_acerto);
+    UnloadSound(audio->som_erro);
+    UnloadSound(audio->som_carta);
+    UnloadSound(audio->som_termino);
+    UnloadSound(audio->som_bug);
+}
+
+void PrepararJogo(JogoMemoria *jogo)
+{
+    strcpy(jogo->participantes[0].nome, "Dudu");
+    jogo->participantes[0].pontos = 0;
+    jogo->participantes[0].cor_display = COR_PLAYER1;
+    
+    strcpy(jogo->participantes[1].nome, "Léo");
+    jogo->participantes[1].pontos = 0;
+    jogo->participantes[1].cor_display = COR_PLAYER2;
+    
+    jogo->conjunto_cartas = NULL;
+    ResetarEstadoJogo(jogo);
+}
+
+void ProcessarJogo(JogoMemoria *jogo)
+{
+    GerenciarAudio(jogo);
+    
+    if (jogo->status == PARTIDA_ATIVA) {
+        ProcessarSistemaBug(jogo);
+        ExecutarComparacaoCartas(jogo);
+        
+        if (!jogo->bug_system.em_acao) {
+            if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+                TratarCliqueUsuario(jogo);
+            }
+        }
+        
+        if (IsKeyPressed(KEY_ENTER) && !jogo->bug_system.em_acao) {
+            jogo->status = PARTIDA_PAUSADA;
+        }
+        
+        if (jogo->combinacoes_feitas == PARES_TOTAL) {
+            jogo->status = PARTIDA_FINALIZADA;
+            PlaySound(jogo->gerenciador_audio.som_termino);
+            
+            if (jogo->participantes[0].pontos > jogo->participantes[1].pontos) {
+                jogo->vencedor_final = 0;
+            } else if (jogo->participantes[1].pontos > jogo->participantes[0].pontos) {
+                jogo->vencedor_final = 1;
+            } else {
+                jogo->vencedor_final = -1;
+            }
+        }
+    }
+    else if (jogo->status == PARTIDA_PAUSADA) {
+        if (IsKeyPressed(KEY_ENTER)) {
+            jogo->status = PARTIDA_ATIVA;
+        }
+    }
+    else if (jogo->status == PARTIDA_FINALIZADA) {
+        if (IsKeyPressed(KEY_R)) {
+            ResetarEstadoJogo(jogo);
+        }
+    }
+}
+
+void RenderizarJogo(const JogoMemoria *jogo)
+{
+    ClearBackground(FUNDO_TELA);
+    
+    switch (jogo->status) {
+        case PARTIDA_ATIVA:
+            RenderizarCartas(jogo);
+            RenderizarInterface(jogo);
+            RenderizarEfeitoBug(jogo);
+            break;
+            
+        case PARTIDA_PAUSADA:
+            RenderizarTelaPausa(jogo);
+            break;
+            
+        case PARTIDA_FINALIZADA:
+            RenderizarTelaFinal(jogo);
+            break;
+    }
+}
+
+int gameMemoria(void)
+{
+    InitWindow(TELA_LARGURA, TELA_ALTURA, "Jogo da Memória");
+    InitAudioDevice();
     SetTargetFPS(60);
     srand(time(NULL));
     
-    carregandoSons();
+    JogoMemoria jogo = {0};
     
-    Card** cards = NULL;
+    ConfigurarRecursos(&jogo.gerenciador_audio);
+    PrepararJogo(&jogo);
     
-    while(!WindowShouldClose()){
-        controleSom();
+    while (!WindowShouldClose()) {
+        ProcessarJogo(&jogo);
         
         BeginDrawing();
-        ClearBackground(RAYWHITE);
-        switch(estadoAtual){
-            case MENU:
-                DrawMenu();
-                if(IsKeyPressed(KEY_ENTER)) estadoAtual = PEDINDO_NOME_J1;
-            break;
-            
-            case PEDINDO_NOME_J1:
-                DrawInputNome("Digite o nome do Primeiro Jogador:");
-                processaTexto(nomeJogador1, MAX_NOME_JOGADOR - 1, PEDINDO_NOME_J2);
-            break;
-            
-            case PEDINDO_NOME_J2:
-                DrawInputNome("Digite o nome do Segundo Jogador:");
-                processaTexto(nomeJogador2, MAX_NOME_JOGADOR - 1, JOGANDO);
-                if(estadoAtual == JOGANDO && cards == NULL){
-                    cards = inicilizandoCards();
-                    pts1 = 0;
-                    pts2 = 0;
-                    pares = 0;
-                    turno = 1;
-                    bugAtivo = false;
-                    bugTempo = 0.0f;
-                }
-            break;
-
-            case JOGANDO:
-                cards = drawJogando(cards);
-                if(IsKeyPressed(KEY_ENTER) && !bugAtivo) estadoAtual = PAUSADO;
-            break;
-
-            case PAUSADO:
-                DrawPausado(cards);
-                if(IsKeyPressed(KEY_ENTER)) estadoAtual = JOGANDO;
-            break;
-            
-            case VITORIA:
-                DrawVitoria();
-                if(IsKeyPressed(KEY_R)){
-                    if(cards != NULL){
-                        for(int i = 0; i < qtdCards; i++){
-                            UnloadTexture(cards[i]->logo);
-                            free(cards[i]->nome);
-                            free(cards[i]);
-                        }
-                        free(cards);
-                        cards = NULL;
-                    }
-                    
-                    primeira = NULL;
-                    segunda = NULL;
-                    esperando = false;
-                    tempo = 1.0f;
-                    pares = 0;
-                    pts1 = 0;
-                    pts2 = 0;
-                    turno = 1;
-                    bugAtivo = false;
-                    bugTempo = 0.0f;
-                    
-                    strcpy(nomeJogador1, "Jogador 1");
-                    strcpy(nomeJogador2, "Jogador 2");
-                    
-                    estadoAtual = MENU;
-                }
-            break;
-        }
+            RenderizarJogo(&jogo);
         EndDrawing();
-    }
-    
-    if(cards != NULL){
-        for(int i = 0; i < qtdCards; i++){
-            UnloadTexture(cards[i]->logo);
-            free(cards[i]->nome);
-            free(cards[i]);
+        
+        if (jogo.status == PARTIDA_FINALIZADA && jogo.vencedor_final != -1) {
+            WaitTime(2.0);
+            
+            int resultado = jogo.vencedor_final + 1;
+            
+            LiberarCartasJogo(jogo.conjunto_cartas);
+            LimparRecursos(&jogo.gerenciador_audio);
+            CloseAudioDevice();
+            CloseWindow();
+            
+            return resultado;
         }
-        free(cards);
     }
     
-    liberandoSons();
+    LiberarCartasJogo(jogo.conjunto_cartas);
+    LimparRecursos(&jogo.gerenciador_audio);
+    CloseAudioDevice();
     CloseWindow();
+    
+    return 0;
 }

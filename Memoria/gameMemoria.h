@@ -1,64 +1,95 @@
-#ifndef GAMEMEMORIA_H
-#define GAMEMEMORIA_H
+#ifndef GAME_MEMORIA_H
+#define GAME_MEMORIA_H
+
 #include "../Lib/raylib.h"
+#include <stdbool.h>
 
-typedef enum{
-    VERSO,
-    FRENTE,
-    ENCONTRADA
-}StateCard;
+// Configurações do Jogo
+#define TELA_LARGURA 800
+#define TELA_ALTURA 600
+#define TOTAL_CARTAS 50
+#define TAMANHO_CARTA 60
+#define ESPACAMENTO_CARTA 6
+#define NOME_MAX 50
+#define PARES_TOTAL 24
+#define DURACAO_COMPARACAO 1.0f
+#define DURACAO_EFEITO_BUG 7.0f
 
-typedef enum{
-    MENU,
-    PEDINDO_NOME_J1,
-    PEDINDO_NOME_J2,
-    JOGANDO,
-    PAUSADO,
-    VITORIA
-} StateGame;
+// Estados 
+typedef enum {
+    CARTA_VIRADA,
+    CARTA_REVELADA,
+    CARTA_COMBINADA
+} StatusCarta;
+
+typedef enum {
+    PARTIDA_ATIVA,
+    PARTIDA_PAUSADA,
+    PARTIDA_FINALIZADA
+} StatusJogo;
+
+// Estruturas de Dados
+typedef struct {
+    StatusCarta status;
+    Rectangle bounds;
+    Texture2D textura;
+    char* identificador;
+    bool bug_ativado;
+} CartaJogo;
 
 typedef struct {
-    StateCard estado;
-    Rectangle retangulo;
-    Texture2D logo;
-    char* nome;
-    bool bugUsado;
-}Card;
+    char nome[NOME_MAX];
+    int pontos;
+    Color cor_display;
+} Participante;
 
-// funcoes principais
-void drawCards(Card** cards);
-Card** inicilizandoCards();
-Card** buscandoClick(Card** cards);
-char** gerandoSeq();
-void gameMemoria();
+typedef struct {
+    bool em_acao;
+    float timer;
+} SistemaBug;
 
-// sons
-void carregandoSons();
-void liberandoSons();
-void controleSom();
+typedef struct {
+    Sound musica_principal;
+    Sound som_acerto;
+    Sound som_erro;
+    Sound som_carta;
+    Sound som_termino;
+    Sound som_bug;
+    bool audio_ativo;
+} AudioManager;
 
-// bug
-void mostraBug();
+typedef struct {
+    CartaJogo* primeira;
+    CartaJogo* segunda;
+    bool processando;
+    float cronometro;
+} ComparadorCartas;
 
-// jogadores
-#define MAX_NOME_JOGADOR 50
-extern char nomeJogador1[MAX_NOME_JOGADOR];
-extern char nomeJogador2[MAX_NOME_JOGADOR];
-extern int pts1;
-extern int pts2; 
-extern int turno;
+// Estrutura Principal do Jogo
+typedef struct {
+    StatusJogo status;
+    int turno_atual;
+    int vencedor_final;
+    int combinacoes_feitas;
 
-// sons
-extern Sound musicaFundo;
-extern Sound somOk;
-extern Sound somFalha;
-extern Sound somFlip;
-extern Sound somFim;
-extern Sound somBug;
-extern bool tocando;
+    Participante participantes[2];
+    CartaJogo** conjunto_cartas;
+    
+    ComparadorCartas comparador;
+    SistemaBug bug_system;
+    AudioManager gerenciador_audio;
 
-// bug
-extern bool bugAtivo;
-extern float bugTempo;
+} JogoMemoria;
+
+
+//
+void ConfigurarRecursos(AudioManager *audio);
+void LimparRecursos(AudioManager *audio);
+
+void PrepararJogo(JogoMemoria *jogo);
+void ProcessarJogo(JogoMemoria *jogo);
+void RenderizarJogo(const JogoMemoria *jogo);
+
+int gameMemoria(void);
 
 #endif
