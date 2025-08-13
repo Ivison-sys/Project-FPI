@@ -1,6 +1,6 @@
 // main.c
 #include <raylib.h>
-#include "gameGolf.h" // Apenas inclua o header do seu jogo
+#include "gameGolf.h" 
 
 int main(void)
 {
