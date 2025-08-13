@@ -27,10 +27,10 @@ static const Color FUNDO_BUG = DARKGRAY;
 static char** CriarSequenciaEmbaralhada(void)
 {
     static char* lista_nomes[] = {
-        "arduino", "assembly", "c", "cpp", "csharp", "css", "dart", "fortran", "git",
+        "arduino", "assembly", "c", "cpp", "csharp", "css", "dart", "mysql", "git",
         "github", "go", "html", "java", "js", "kotlin", "lua", "php", "python", "quartus", 
         "r", "react", "swift", "ts", "vscode", "arduino", "assembly", "c", "cpp", "csharp", 
-        "css", "dart", "fortran", "git", "github", "go", "html", "java", "js", "kotlin", 
+        "css", "dart", "mysql", "git", "github", "go", "html", "java", "js", "kotlin", 
         "lua", "php", "python", "quartus", "r", "react", "swift", "ts", "vscode"
     };
     
@@ -114,30 +114,7 @@ static void LiberarCartasJogo(CartaJogo** cartas)
     free(cartas);
 }
 
-//Reset do Jogo
-static void ResetarEstadoJogo(JogoMemoria *jogo)
-{
-    jogo->status = PARTIDA_ATIVA;
-    jogo->turno_atual = 0;
-    jogo->vencedor_final = -1;
-    jogo->combinacoes_feitas = 0;
-    
-    jogo->participantes[0].pontos = 0;
-    jogo->participantes[1].pontos = 0;
-    
-    jogo->comparador.primeira = NULL;
-    jogo->comparador.segunda = NULL;
-    jogo->comparador.processando = false;
-    jogo->comparador.cronometro = DURACAO_COMPARACAO;
-    
-    jogo->bug_system.em_acao = false;
-    jogo->bug_system.timer = 0.0f;
-    
-    if (jogo->conjunto_cartas != NULL) {
-        LiberarCartasJogo(jogo->conjunto_cartas);
-    }
-    ConfigurarCartasJogo(&jogo->conjunto_cartas);
-}
+
 
 // Clique do Mouse
 static void TratarCliqueUsuario(JogoMemoria *jogo)
@@ -291,12 +268,12 @@ static void RenderizarInterface(const JogoMemoria *jogo)
     snprintf(texto_p2, sizeof(texto_p2), "%s: %d", 
              jogo->participantes[1].nome, jogo->participantes[1].pontos);
     
-    DrawText(texto_p1, 10, 10, 20, jogo->participantes[0].cor_display);
-    DrawText(texto_p2, TELA_LARGURA - MeasureText(texto_p2, 20) - 10, 10, 20, jogo->participantes[1].cor_display);
+    DrawText(texto_p1, 10, 10, 25, jogo->participantes[0].cor_display);
+    DrawText(texto_p2, TELA_LARGURA - MeasureText(texto_p2, 25) - 10, 10, 25, jogo->participantes[1].cor_display);
     
     char indicador_turno[100];
     snprintf(indicador_turno, sizeof(indicador_turno), "Turno: %s", jogo->participantes[jogo->turno_atual].nome);
-    DrawText(indicador_turno, TELA_LARGURA/2 - MeasureText(indicador_turno, 25)/2, 10, 25, BLACK);
+    DrawText(indicador_turno, TELA_LARGURA/2 - MeasureText(indicador_turno, 35)/2, 10, 35, BLACK);
 }
 
 // Efeito Visual do Bug
@@ -353,8 +330,6 @@ static void RenderizarTelaFinal(const JogoMemoria *jogo)
     
     DrawText(score1, TELA_LARGURA/2 - MeasureText(score1, 25)/2, TELA_ALTURA/2, 25, jogo->participantes[0].cor_display);
     DrawText(score2, TELA_LARGURA/2 - MeasureText(score2, 25)/2, TELA_ALTURA/2 + 40, 25, jogo->participantes[1].cor_display);
-    
-    DrawText("Pressione 'R' para jogar novamente", TELA_LARGURA/2 - MeasureText("Pressione 'R' para jogar novamente", 20)/2, TELA_ALTURA/2 + 100, 20, BLACK);
 }
 
 //audio
@@ -379,6 +354,8 @@ void LimparRecursos(AudioManager *audio)
     UnloadSound(audio->som_bug);
 }
 
+//
+
 void PrepararJogo(JogoMemoria *jogo)
 {
     strcpy(jogo->participantes[0].nome, "Dudu");
@@ -389,8 +366,21 @@ void PrepararJogo(JogoMemoria *jogo)
     jogo->participantes[1].pontos = 0;
     jogo->participantes[1].cor_display = COR_PLAYER2;
     
+    jogo->status = PARTIDA_ATIVA;
+    jogo->turno_atual = 0;
+    jogo->vencedor_final = -1;
+    jogo->combinacoes_feitas = 0;
+    
+    jogo->comparador.primeira = NULL;
+    jogo->comparador.segunda = NULL;
+    jogo->comparador.processando = false;
+    jogo->comparador.cronometro = DURACAO_COMPARACAO;
+    
+    jogo->bug_system.em_acao = false;
+    jogo->bug_system.timer = 0.0f;
+    
     jogo->conjunto_cartas = NULL;
-    ResetarEstadoJogo(jogo);
+    ConfigurarCartasJogo(&jogo->conjunto_cartas);
 }
 
 void ProcessarJogo(JogoMemoria *jogo)
@@ -427,11 +417,6 @@ void ProcessarJogo(JogoMemoria *jogo)
     else if (jogo->status == PARTIDA_PAUSADA) {
         if (IsKeyPressed(KEY_ENTER)) {
             jogo->status = PARTIDA_ATIVA;
-        }
-    }
-    else if (jogo->status == PARTIDA_FINALIZADA) {
-        if (IsKeyPressed(KEY_R)) {
-            ResetarEstadoJogo(jogo);
         }
     }
 }
