@@ -85,7 +85,7 @@ static void CarregarPlataformas(Plataforma plataformas[NUM_PLATAFORMAS])
     float largura_pilar = 100.0f;
     float altura_pilar = 120.0f;
     float largura_total = 400.0f;
-
+ 
     // --- Plataforma 0: Muro sólido ---
     plataformas[0].num_partes_colisao = 1;
     plataformas[0].partes_colisao[0] = (Rectangle){ centro_x_plat - 110, 0, 220, ALTURA_TELA / 2.0f };
