@@ -32,8 +32,7 @@ static const Color Marrom = {114, 54, 0, 255};
 // Controles
 static const int teclas_jogadores[CONTAGEM_JOGADORES] = {KEY_A, KEY_L};
 
-// Funções para Nuvens
-
+// Função para inicializar o Nuvens
 static void InicializarNuvens(Game *game)
 {
     for (int i = 0; i < MAX_NUVENS; i++)
@@ -44,7 +43,7 @@ static void InicializarNuvens(Game *game)
         game->nuvens[i].velocidade = GetRandomValue(20, 50);
     }
 }
-
+// Função para atualizar as Nuvens
 static void AtualizarNuvens(Game *game)
 {
     float delta = GetFrameTime();
@@ -60,7 +59,7 @@ static void AtualizarNuvens(Game *game)
         }
     }
 }
-
+// Função para Desenhar as Nuvens
 static void DesenharNuvens(const Game *game)
 {
     for (int i = 0; i < MAX_NUVENS; i++)
@@ -72,7 +71,6 @@ static void DesenharNuvens(const Game *game)
 }
 
 // FUNÇÕES PRINCIPAIS DO JOGO (estáticas)
-
 static void CarregarPlataformas(Plataforma plataformas[NUM_PLATAFORMAS])
 {
     memset(plataformas, 0, sizeof(Plataforma) * NUM_PLATAFORMAS);
@@ -104,7 +102,7 @@ static void CarregarPlataformas(Plataforma plataformas[NUM_PLATAFORMAS])
     plataformas[2].area_buraco = (Rectangle){ centro_x_plat - 10, 0, 20, 20 };
     plataformas[2].deslocamento_y = ALTURA_TELA + 150;
 }
-
+// Função para reniciar jogo
 static void ReiniciarJogo(Game *game)
 {
     for (int i = 0; i < CONTAGEM_JOGADORES; i++) {
@@ -121,7 +119,7 @@ static void ReiniciarJogo(Game *game)
     game->plataforma_esta_animando = false;
     game->progresso_animacao_plataforma = 0.0f;
 }
-
+// Função para colisões da bola
 static void ResolverColisaoBolaLinha(Bola *bola, Vector2 p1, Vector2 p2)
 {
     Vector2 linhaVetor = Vector2Subtract(p2, p1);
@@ -141,7 +139,7 @@ static void ResolverColisaoBolaLinha(Bola *bola, Vector2 p1, Vector2 p2)
 
 Texture2D texturaPassaro[3];
 Passaro passaros[NUM_PASSAROS];
-
+// Função para Inicializar os passaros
 void IniciarPassaros() {
     texturaPassaro[0] = LoadTexture("Golf/Imagens/imagens_passaro/bird_1_bluejay (4).png");  // Frame 1
     texturaPassaro[1] = LoadTexture("Golf/Imagens/imagens_passaro/bird_1_bluejay (5).png");  // Frame 2
@@ -156,7 +154,7 @@ void IniciarPassaros() {
     }
 }
 
-
+// Função para atualizar passaros frame a frame
 void AtualizarPassaros(float delta) {
     for (int i = 0; i < NUM_PASSAROS; i++) {
         passaros[i].pos.x += passaros[i].speed;
@@ -175,7 +173,7 @@ void AtualizarPassaros(float delta) {
         }
     }
 }
-
+// Função para desenhar os passaros.
 
 void DesenharPassaros() {
     for (int i = 0; i < NUM_PASSAROS; i++) {
@@ -189,7 +187,7 @@ void FinalizarPassaros(void)
     UnloadTexture(texturaPassaro[1]);
     UnloadTexture(texturaPassaro[2]);
 }
-
+// Função para inicializar Golfistas
 void IniciarGolfistas(Game *game)
 {
     char caminho_textura[100]; // String para montar o nome do arquivo
@@ -213,8 +211,8 @@ void IniciarGolfistas(Game *game)
         {
             for (int j = 0; j < NUM_FRAMES_GOLFISTA; j++)
             {
-                // <<-- MUDANÇA PRINCIPAL AQUI -->>
-                // Caminho para as imagens do jogador AZUL (usando os nomes AZUL_0.png, AZUL_1.png...)
+                
+                // Caminho para as imagens do jogador AZUL 
                 sprintf(caminho_textura, "Golf/Imagens/jogadorvermelhoArremesso/golfista_%d.png", j);
                 golfistas[i].texturas[j] = LoadTexture(caminho_textura);
             }
@@ -228,14 +226,14 @@ void IniciarGolfistas(Game *game)
         
     }
 }
-
+// Função para Atualizar Golfistas
 void AtualizarGolfistas(Game *game)
 {
     float delta = GetFrameTime(); // Pega o tempo do frame
 
     for (int i = 0; i < CONTAGEM_JOGADORES; i++)
     {
-        // Se a animação de arremesso está ATIVA, ela tem prioridade
+        // Se a animação de arremesso está ATIVA, ela é ativada
         if (golfistas[i].esta_animando_lancamento)
         {
             golfistas[i].tempo_animacao += delta;
@@ -318,7 +316,7 @@ void FinalizarGolfistas(void)
 }
 
 
-
+// Função para Desenhar TelaVitoria
 static void DesenharTelaVitoria(int vencedor)
 {
     DrawRectangle(0, 0, LARGURA_TELA, ALTURA_TELA, Fade(BLACK, 0.7f));
@@ -331,7 +329,6 @@ static void DesenharTelaVitoria(int vencedor)
     DrawText(textoReiniciar, LARGURA_TELA / 2 - larguraTextoReiniciar / 2, ALTURA_TELA / 2 + 20, 20, WHITE);
 }
 
-// FUNÇÕES PÚBLICAS
 
 
 void CarregarRecursos(GameAssets *assets)
@@ -363,7 +360,7 @@ void InicializarJogo(Game *game)
     IniciarPassaros(); 
     IniciarGolfistas(game); 
 }
-
+// Função principal do jogo
 void AtualizarJogo(Game *game, GameAssets *assets)
 {
     AtualizarNuvens(game);
@@ -528,7 +525,7 @@ void AtualizarJogo(Game *game, GameAssets *assets)
         }
     }
 }
-
+// Função Principal de desenho.
 void DesenharJogo(const Game *game)
 {
     ClearBackground(COR_FUNDO);
