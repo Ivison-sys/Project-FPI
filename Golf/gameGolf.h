@@ -11,6 +11,9 @@
 #define CONTAGEM_JOGADORES 2
 #define PONTUACAO_PARA_VENCER 5
 #define MAX_NUVENS 10
+#define NUM_PASSAROS 5
+#define VELOCIDADE_ANIMACAO_LANCAMENTO 0.05f 
+
 
 //----------------------------------------------------------------------------------
 // ESTRUTURAS DE DADOS
@@ -21,6 +24,31 @@ typedef struct Nuvem {
     float raio;
     float velocidade;
 } Nuvem;
+
+// Em gameGolf.c, perto das outras definições
+
+#define NUM_FRAMES_GOLFISTA 11 // O número de imagens que você tem
+
+// Estrutura para o Golfista animado
+typedef struct {
+    Vector2 posicao;
+    Texture2D texturas[NUM_FRAMES_GOLFISTA];
+    int frame_atual;
+    bool virado_esquerda; 
+    // Para espelhar o jogador 2
+    bool esta_animando_lancamento; // Controla se a animação de arremesso está ativa
+    float tempo_animacao;   
+} Golfista;
+
+// Variável estática para armazenar os nossos dois golfistas
+static Golfista golfistas[CONTAGEM_JOGADORES];
+
+
+typedef struct {
+    Vector2 pos;
+    float speed;
+    int frame;  
+} Passaro;
 
 typedef enum GameState_G {
     JOGANDO_G,

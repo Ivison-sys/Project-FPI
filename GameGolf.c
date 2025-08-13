@@ -3,10 +3,10 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
+#include <time.h>
+#include <stdlib.h>
 
-//----------------------------------------------------------------------------------
-// CONSTANTES INTERNAS AO MÓDULO
-//----------------------------------------------------------------------------------
+// CONSTANTES INTERNAS
 #define GRAVIDADE 400.0f
 #define ATRITO 0.98f
 #define RAIO_BOLA 8.0f
@@ -17,7 +17,7 @@
 #define NUM_PLATAFORMAS 3
 #define VELOCIDADE_ANIMACAO 1.5f
 #define MAX_COLISAO 5
-// MAX_NUVENS já está no .h
+
 
 // Variáveis estáticas
 static Texture2D cenarioGrama;
@@ -32,9 +32,7 @@ static const Color Marrom = {114, 54, 0, 255};
 // Controles
 static const int teclas_jogadores[CONTAGEM_JOGADORES] = {KEY_A, KEY_L};
 
-//----------------------------------------------------------------------------------
-// FUNÇÕES PARA AS NUVENS
-//----------------------------------------------------------------------------------
+// Funções para Nuvens
 
 static void InicializarNuvens(Game *game)
 {
@@ -73,9 +71,7 @@ static void DesenharNuvens(const Game *game)
     }
 }
 
-//----------------------------------------------------------------------------------
 // FUNÇÕES PRINCIPAIS DO JOGO (estáticas)
-//----------------------------------------------------------------------------------
 
 static void CarregarPlataformas(Plataforma plataformas[NUM_PLATAFORMAS])
 {
@@ -143,6 +139,186 @@ static void ResolverColisaoBolaLinha(Bola *bola, Vector2 p1, Vector2 p2)
     bola->velocidade = Vector2Scale(bola->velocidade, ATRITO);
 }
 
+Texture2D texturaPassaro[3];
+Passaro passaros[NUM_PASSAROS];
+
+void IniciarPassaros() {
+    texturaPassaro[0] = LoadTexture("Golf/Imagens/imagens_passaro/bird_1_bluejay (4).png");  // Frame 1
+    texturaPassaro[1] = LoadTexture("Golf/Imagens/imagens_passaro/bird_1_bluejay (5).png");  // Frame 2
+    texturaPassaro[2] = LoadTexture("Golf/Imagens/imagens_passaro/bird_1_bluejay (6).png");  // Frame 3
+
+    srand(time(NULL));
+    for (int i = 0; i < NUM_PASSAROS; i++) {
+        passaros[i].pos.x = GetRandomValue(-200, GetScreenWidth());
+        passaros[i].pos.y = GetRandomValue(50, 200);
+        passaros[i].speed = GetRandomValue(100, 250) / 100.0f;
+        passaros[i].frame = 0;  // Inicializa o quadro como o primeiro
+    }
+}
+
+
+void AtualizarPassaros(float delta) {
+    for (int i = 0; i < NUM_PASSAROS; i++) {
+        passaros[i].pos.x += passaros[i].speed;
+
+        // Se sair da tela, reaparece à esquerda
+        if (passaros[i].pos.x > GetScreenWidth()) {
+            passaros[i].pos.x = -texturaPassaro[0].width;
+            passaros[i].pos.y = GetRandomValue(50, 200);
+            passaros[i].speed = GetRandomValue(100, 250) / 100.0f;
+        }
+
+        // Atualizar o quadro da animação
+        passaros[i].frame++;
+        if (passaros[i].frame >= 3) {
+            passaros[i].frame = 0;  // Volta para o primeiro quadro
+        }
+    }
+}
+
+
+void DesenharPassaros() {
+    for (int i = 0; i < NUM_PASSAROS; i++) {
+        DrawTexture(texturaPassaro[passaros[i].frame], passaros[i].pos.x, passaros[i].pos.y, WHITE);
+    }
+}
+// Função para liberar as texturas dos pássaros
+void FinalizarPassaros(void)
+{
+    UnloadTexture(texturaPassaro[0]);
+    UnloadTexture(texturaPassaro[1]);
+    UnloadTexture(texturaPassaro[2]);
+}
+
+void IniciarGolfistas(Game *game)
+{
+    char caminho_textura[100]; // String para montar o nome do arquivo
+
+    for (int i = 0; i < CONTAGEM_JOGADORES; i++)
+    {
+        // Se for o Jogador 0 (esquerda), carrega as texturas vermelhas
+        if (i == 0) 
+        {
+            for (int j = 0; j < NUM_FRAMES_GOLFISTA; j++)
+            {
+                // Caminho para as imagens do jogador VERMELHO
+                sprintf(caminho_textura, "Golf/jogadorazulArremesso/AZUL_%d.png", j);
+                golfistas[i].texturas[j] = LoadTexture(caminho_textura);
+            }
+            golfistas[i].virado_esquerda = false; // Jogador da esquerda não é virado
+            golfistas[i].posicao = (Vector2){ game->posicoes_iniciais[i].x - 180, game->posicoes_iniciais[i].y - 90 };
+        }
+        // Se for o Jogador 1 (direita), carrega as texturas AZUIS
+        else 
+        {
+            for (int j = 0; j < NUM_FRAMES_GOLFISTA; j++)
+            {
+                // <<-- MUDANÇA PRINCIPAL AQUI -->>
+                // Caminho para as imagens do jogador AZUL (usando os nomes AZUL_0.png, AZUL_1.png...)
+                sprintf(caminho_textura, "Golf/jogadorvermelhoArremesso/golfista_%d.png", j);
+                golfistas[i].texturas[j] = LoadTexture(caminho_textura);
+            }
+            golfistas[i].virado_esquerda = true; // Jogador da direita é virado (espelhado)
+            golfistas[i].posicao = (Vector2){ game->posicoes_iniciais[i].x - 90, game->posicoes_iniciais[i].y - 85 };
+        }
+        golfistas[i].frame_atual = 0;
+        golfistas[i].esta_animando_lancamento = false; // Começa com a animação desativada
+        golfistas[i].tempo_animacao = 0.0f;  
+
+        
+    }
+}
+
+void AtualizarGolfistas(Game *game)
+{
+    float delta = GetFrameTime(); // Pega o tempo do frame
+
+    for (int i = 0; i < CONTAGEM_JOGADORES; i++)
+    {
+        // Se a animação de arremesso está ATIVA, ela tem prioridade
+        if (golfistas[i].esta_animando_lancamento)
+        {
+            golfistas[i].tempo_animacao += delta;
+
+            // Se o tempo no frame atual passou do limite, avança para o próximo frame
+            if (golfistas[i].tempo_animacao >= VELOCIDADE_ANIMACAO_LANCAMENTO)
+            {
+                golfistas[i].tempo_animacao = 0.0f; // Reseta o timer
+                golfistas[i].frame_atual++;        // Avança o frame
+
+                // Se a animação chegou ao fim (ex: frame 10), desliga a flag
+                // e deixa o jogador na pose final de "follow-through" (frame 9)
+                if (golfistas[i].frame_atual >= 10) // Ajuste o '10' para o número do seu último frame + 1
+                {
+                    golfistas[i].frame_atual = 9; // Trava no último frame
+                    golfistas[i].esta_animando_lancamento = false; // DESLIGA a animação
+                }
+            }
+        }
+        // Se a bola JÁ FOI lançada, mas a animação de arremesso TERMINOU
+        else if (game->jogadores[i].lancada)
+        {
+            // O jogador permanece na pose final (frame 9) enquanto a bola voa.
+            
+        }
+        // Se a bola AINDA NÃO foi lançada, usa a lógica de mira antiga
+        else 
+        {
+            switch (game->lancadores[i].estado)
+            {
+                case NAO_MIRANDO:
+                    golfistas[i].frame_atual = 0; // Pose de descanso
+                    break;
+                
+                case MIRANDO_ANGULO:
+                    golfistas[i].frame_atual = 1; // Pose de preparação
+                    break;
+
+                case AJUSTANDO_POTENCIA:
+                    //continua na Pose de preparação.
+                    golfistas[i].frame_atual = 1;
+                    break;
+                    
+            }
+        }
+    }
+}
+
+void DesenharGolfistas(void)
+{
+    for (int i = 0; i < CONTAGEM_JOGADORES; i++)
+    {
+        
+            Texture2D texturaAtual = golfistas[i].texturas[golfistas[i].frame_atual];
+            
+            Rectangle sourceRec = { 0.0f, 0.0f, (float)texturaAtual.width, (float)texturaAtual.height };
+            // Vira a imagem para o jogador 2
+            if (golfistas[i].virado_esquerda)
+            {
+                sourceRec.width *= -1;
+            }
+
+            Rectangle destRec = { golfistas[i].posicao.x+100, golfistas[i].posicao.y, (float)texturaAtual.width+40, (float)texturaAtual.height+40 };
+
+            DrawTexturePro(texturaAtual, sourceRec, destRec, (Vector2){0, 0}, 0.0f, WHITE);
+        
+    }
+}
+
+// Função para descarregar todas as texturas dos golfistas
+void FinalizarGolfistas(void)
+{
+    for (int i = 0; i < CONTAGEM_JOGADORES; i++)
+    {
+        for (int j = 0; j < NUM_FRAMES_GOLFISTA; j++)
+        {
+            UnloadTexture(golfistas[i].texturas[j]);
+        }
+    }
+}
+
+
+
 static void DesenharTelaVitoria(int vencedor)
 {
     DrawRectangle(0, 0, LARGURA_TELA, ALTURA_TELA, Fade(BLACK, 0.7f));
@@ -155,9 +331,8 @@ static void DesenharTelaVitoria(int vencedor)
     DrawText(textoReiniciar, LARGURA_TELA / 2 - larguraTextoReiniciar / 2, ALTURA_TELA / 2 + 20, 20, WHITE);
 }
 
-//----------------------------------------------------------------------------------
 // FUNÇÕES PÚBLICAS
-//----------------------------------------------------------------------------------
+
 
 void CarregarRecursos(GameAssets *assets)
 {
@@ -173,6 +348,7 @@ void DescarregarRecursos(GameAssets *assets)
     UnloadSound(assets->som_ponto);
     UnloadSound(assets->som_agua);
     UnloadTexture(cenarioGrama);
+    FinalizarGolfistas();
 }
 
 void InicializarJogo(Game *game)
@@ -184,11 +360,15 @@ void InicializarJogo(Game *game)
     
     InicializarNuvens(game); 
     ReiniciarJogo(game);
+    IniciarPassaros(); 
+    IniciarGolfistas(game); 
 }
 
 void AtualizarJogo(Game *game, GameAssets *assets)
 {
     AtualizarNuvens(game);
+    AtualizarPassaros(GetFrameTime());
+    AtualizarGolfistas(game);
 
     float bola_parada = 3.0;
     if (game->estadoAtual == JOGANDO_G)
@@ -260,6 +440,9 @@ void AtualizarJogo(Game *game, GameAssets *assets)
                             float vel_inicial = lancador->potencia * POTENCIA_LANCAMENTO;
                             bola->velocidade = (Vector2){ cosf(angulo_rad) * vel_inicial, sinf(angulo_rad) * vel_inicial };
                             PlaySound(assets->som_tiro);
+                            golfistas[pj].esta_animando_lancamento = true; // LIGA a flag da animação
+                            golfistas[pj].frame_atual = 2; // Define o frame inicial da animação para 2
+                            golfistas[pj].tempo_animacao = 0.0f; // Reseta o timer da animação
                             lancador->estado = NAO_MIRANDO;
                         }
                         break;
@@ -267,8 +450,8 @@ void AtualizarJogo(Game *game, GameAssets *assets)
             } else { 
                 bola->posicao_anterior = bola->posicao;
                 bola->velocidade.y += GRAVIDADE * delta;
-                bola->posicao.x += bola->velocidade.x * 1.8f * delta;
-                bola->posicao.y += bola->velocidade.y * 1.8f * delta;
+                bola->posicao.x += bola->velocidade.x * 1.3f * delta;
+                bola->posicao.y += bola->velocidade.y * 1.3f * delta;
                 
                 for (int i = 0; i < plataforma_ativa->num_partes_colisao; i++) {
                     Rectangle parte = plataforma_ativa->partes_colisao[i];
@@ -350,6 +533,8 @@ void DesenharJogo(const Game *game)
 {
     ClearBackground(COR_FUNDO);
     DesenharNuvens(game);
+    DesenharPassaros();
+    DesenharGolfistas();
     
     DrawRectangle(0, ALTURA_TELA / 2, 200, ALTURA_TELA / 2, Marrom);
     DrawRectangle(LARGURA_TELA - 200, ALTURA_TELA / 2, 200, ALTURA_TELA / 2, Marrom);
@@ -425,9 +610,7 @@ void DesenharJogo(const Game *game)
         DesenharTelaVitoria(game->vencedor);
     }
 }
-
-// --- Implementação da função pública ---
-// A assinatura foi alterada para `int gameGolf(void)`
+// Substituição da main
 int gameGolf(void)
 {
     InitWindow(LARGURA_TELA, ALTURA_TELA, "Jogo de Golfe");
@@ -463,6 +646,7 @@ int gameGolf(void)
     DescarregarRecursos(&assets);
     CloseAudioDevice();
     CloseWindow();
+    
     
     return 0;
 }
