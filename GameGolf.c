@@ -202,7 +202,7 @@ void IniciarGolfistas(Game *game)
             for (int j = 0; j < NUM_FRAMES_GOLFISTA; j++)
             {
                 // Caminho para as imagens do jogador VERMELHO
-                sprintf(caminho_textura, "Golf/jogadorazulArremesso/AZUL_%d.png", j);
+                sprintf(caminho_textura, "Golf/Imagens/jogadorazulArremesso/AZUL_%d.png", j);
                 golfistas[i].texturas[j] = LoadTexture(caminho_textura);
             }
             golfistas[i].virado_esquerda = false; // Jogador da esquerda não é virado
@@ -215,7 +215,7 @@ void IniciarGolfistas(Game *game)
             {
                 // <<-- MUDANÇA PRINCIPAL AQUI -->>
                 // Caminho para as imagens do jogador AZUL (usando os nomes AZUL_0.png, AZUL_1.png...)
-                sprintf(caminho_textura, "Golf/jogadorvermelhoArremesso/golfista_%d.png", j);
+                sprintf(caminho_textura, "Golf/Imagens/jogadorvermelhoArremesso/golfista_%d.png", j);
                 golfistas[i].texturas[j] = LoadTexture(caminho_textura);
             }
             golfistas[i].virado_esquerda = true; // Jogador da direita é virado (espelhado)
