@@ -46,7 +46,7 @@ void iniciarJogo(GameState_H *game){
         .posicao = {175, game->screen_height/2},
         .velocidade = {0.0f, 0.0f},
         .atracao = {0.0f, 0.0f},
-        .cor = WHITE,
+        .cor = RAYWHITE,
         .raio = 55.0f,
         .coefgravidade = 0.0f,
         .gols = 0
@@ -57,7 +57,7 @@ void iniciarJogo(GameState_H *game){
         .posicao = {game->screen_width - 175, game->screen_height/2},
         .velocidade = {0.0f, 0.0f},
         .atracao = {0.0f, 0.0f},
-        .cor = WHITE,
+        .cor = RAYWHITE,
         .raio = 55.0f,
         .coefgravidade = 0.0f,
         .gols = 0
@@ -67,7 +67,7 @@ void iniciarJogo(GameState_H *game){
     game->bola = (Bola_H) {
         .posicao = {game->screen_width/2, game->screen_height/2},
         .velocidade = {0.0f, 0.0f},
-        .cor = WHITE,
+        .cor = RAYWHITE,
         .som = LoadSound("Hoquei/src_sounds/colisaometalica.wav"),
         .raio = 22.0f
     };
@@ -394,10 +394,14 @@ void desenharJogo(GameState_H *game){
     
     DrawLineEx(game->gol1.inicio, game->gol1.fim, game->grossuralinha, game->gol1.cor);
     DrawLineEx(game->gol2.inicio, game->gol2.fim, game->grossuralinha, game->gol2.cor);
-
-    sprintf(game->tempo, "TEMPO ATUAL: %.2f", game->tempoatual);
+    if(game->tempoatual < 60.0f){
+        sprintf(game->tempo, "TEMPO ATUAL: %.2f", game->tempoatual);
+    }
+    else if(game->tempoatual >= 60.0f){
+        sprintf(game->tempo, "TEMPO ATUAL: %.0f:%.0f", game->tempoatual/60, fmod(game->tempoatual, 60.0f));
+    }
     DrawText(game->tempo, game->screen_width / 2 - MeasureText(game->tempo, 10) / 2, 
-        game->screen_height - 20, 10, RAYWHITE);
+    game->screen_height - 20, 10, RAYWHITE);
 
     sprintf(game->placar, "%d %d", game->jogador1.gols, game->jogador2.gols);
     DrawText(game->placar, game->screen_width/2 - MeasureText(game->placar, 80) / 2, 
